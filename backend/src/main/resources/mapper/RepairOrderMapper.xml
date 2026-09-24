@@ -97,7 +97,7 @@
     <if test="exceptionFlag != null and exceptionFlag">AND ro.exception_flag=1</if>
     <if test="suspectedDuplicate != null and suspectedDuplicate">AND ro.duplicate_flag=1</if>
     <if test="acceptTimeout != null and acceptTimeout">AND ro.status=1 AND ro.accept_deadline IS NOT NULL AND ro.accept_deadline &lt; #{now}</if>
-    <if test="completeTimeout != null and completeTimeout">AND ro.status IN (2,4) AND ro.complete_deadline IS NOT NULL AND ro.complete_deadline &lt; #{now}</if>
+    <if test="completeTimeout != null and completeTimeout">AND ro.status IN (2,4,5) AND ro.complete_deadline IS NOT NULL AND ro.complete_deadline &lt; #{now}</if>
     ORDER BY ro.report_time DESC,ro.id DESC
   </select>
   <select id="selectSuspectedDuplicateOrders" resultType="com.dormrepair.order.vo.SuspectedRepairOrder">
@@ -140,4 +140,29 @@
   <update id="casSubmitResult">UPDATE repair_order SET status=3,repair_submit_time=#{repairSubmitTime} WHERE id=#{id} AND deleted=0 AND status IN (2,4) AND current_assignee_id=#{workerId}</update>
   <update id="casStudentConfirm">UPDATE repair_order SET status=6,confirm_time=#{now},complete_time=#{now} WHERE id=#{id} AND student_uid=#{studentUid} AND status=3 AND deleted=0</update>
   <update id="casStudentRework">UPDATE repair_order SET status=4,rework_count=rework_count+1,expected_complete_time=NULL,complete_deadline=NULL,exception_flag=CASE WHEN rework_count&gt;=3 THEN 1 ELSE exception_flag END WHERE id=#{id} AND student_uid=#{studentUid} AND status=3 AND deleted=0</update>
+  <sql id="ReminderColumns">ro.id AS orderId,ro.order_no AS orderNo,ro.current_assignee_id AS assigneeWorkerId,u.id AS receiverUserId</sql>
+  <select id="selectAcceptReminderCandidates" resultType="com.dormrepair.reminder.model.ReminderOrderCandidate">
+    SELECT <include refid="ReminderColumns"/>,ro.accept_deadline AS deadline FROM repair_order ro
+    JOIN repair_worker w ON w.id=ro.current_assignee_id AND w.deleted=0 JOIN sys_user u ON u.id=w.user_id AND u.deleted=0
+    WHERE ro.deleted=0 AND ro.status=1 AND ro.accept_deadline&gt;#{from} AND ro.accept_deadline&lt;=#{to}
+    ORDER BY ro.accept_deadline,ro.id LIMIT #{limit}
+  </select>
+  <select id="selectAcceptTimeoutCandidates" resultType="com.dormrepair.reminder.model.ReminderOrderCandidate">
+    SELECT <include refid="ReminderColumns"/>,ro.accept_deadline AS deadline FROM repair_order ro
+    JOIN repair_worker w ON w.id=ro.current_assignee_id AND w.deleted=0 JOIN sys_user u ON u.id=w.user_id AND u.deleted=0
+    WHERE ro.deleted=0 AND ro.status=1 AND ro.accept_deadline IS NOT NULL AND ro.accept_deadline&lt;=#{now}
+    ORDER BY ro.accept_deadline,ro.id LIMIT #{limit}
+  </select>
+  <select id="selectCompleteReminderCandidates" resultType="com.dormrepair.reminder.model.ReminderOrderCandidate">
+    SELECT <include refid="ReminderColumns"/>,ro.complete_deadline AS deadline FROM repair_order ro
+    JOIN repair_worker w ON w.id=ro.current_assignee_id AND w.deleted=0 JOIN sys_user u ON u.id=w.user_id AND u.deleted=0
+    WHERE ro.deleted=0 AND ro.status IN (2,4,5) AND ro.complete_deadline&gt;#{from} AND ro.complete_deadline&lt;=#{to}
+    ORDER BY ro.complete_deadline,ro.id LIMIT #{limit}
+  </select>
+  <select id="selectCompleteTimeoutCandidates" resultType="com.dormrepair.reminder.model.ReminderOrderCandidate">
+    SELECT <include refid="ReminderColumns"/>,ro.complete_deadline AS deadline FROM repair_order ro
+    JOIN repair_worker w ON w.id=ro.current_assignee_id AND w.deleted=0 JOIN sys_user u ON u.id=w.user_id AND u.deleted=0
+    WHERE ro.deleted=0 AND ro.status IN (2,4,5) AND ro.complete_deadline IS NOT NULL AND ro.complete_deadline&lt;=#{now}
+    ORDER BY ro.complete_deadline,ro.id LIMIT #{limit}
+  </select>
 </mapper>

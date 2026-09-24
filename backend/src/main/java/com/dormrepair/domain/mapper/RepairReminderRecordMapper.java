@@ -7,4 +7,5 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface RepairReminderRecordMapper {
     RepairReminderRecord selectById(@Param("id") Long id);
+    int insertIgnore(RepairReminderRecord record);
 }

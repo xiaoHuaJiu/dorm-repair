@@ -79,3 +79,8 @@ app:
     effective-batch-size: ${LEAVE_EFFECTIVE_BATCH_SIZE:100}
     end-batch-size: ${LEAVE_END_BATCH_SIZE:100}
     stale-minutes: ${LEAVE_STALE_MINUTES:5}
+  task:
+    enabled: ${REPAIR_TASK_ENABLED:true}
+    reminder-scan-cron: ${REMINDER_SCAN_CRON:0 * * * * ?}
+    timeout-scan-cron: ${TIMEOUT_SCAN_CRON:0 * * * * ?}
+    batch-size: ${TASK_BATCH_SIZE:100}

@@ -22,4 +22,8 @@
     FROM repair_reminder_record
     WHERE id = #{id}
   </select>
+  <insert id="insertIgnore" useGeneratedKeys="true" keyProperty="id">
+    INSERT IGNORE INTO repair_reminder_record(order_id,reminder_type,reminder_level,deadline_time,receiver_id,send_status,send_time)
+    VALUES(#{orderId},#{reminderType},#{reminderLevel},#{deadlineTime},#{receiverId},#{sendStatus},#{sendTime})
+  </insert>
 </mapper>

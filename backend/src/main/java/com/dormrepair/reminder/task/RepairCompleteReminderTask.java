@@ -1,0 +1,4 @@
+package com.dormrepair.reminder.task;
+import com.dormrepair.reminder.enums.ReminderLevel;import com.dormrepair.reminder.service.RepairReminderService;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;import org.springframework.scheduling.annotation.Scheduled;import org.springframework.stereotype.Component;import java.time.LocalDateTime;
+@Component @ConditionalOnProperty(prefix="app.task",name="enabled",havingValue="true",matchIfMissing=true)
+public class RepairCompleteReminderTask {private final RepairReminderService service;public RepairCompleteReminderTask(RepairReminderService service){this.service=service;}@Scheduled(cron="${app.task.reminder-scan-cron:0 * * * * ?}")public void scan(){LocalDateTime now=LocalDateTime.now();service.createCompleteReminders(now,ReminderLevel.MINUS_10);service.createCompleteReminders(now,ReminderLevel.MINUS_5);}}

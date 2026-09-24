@@ -34,4 +34,5 @@
     VALUES (#{username}, #{password}, #{realName}, #{phone}, #{roleType}, #{status}, #{deleted})
   </insert>
   <update id="updateStatus">UPDATE sys_user SET status=#{status} WHERE id=#{id} AND deleted=0</update>
+  <select id="selectEnabledAdminIds" resultType="long">SELECT id FROM sys_user WHERE role_type=3 AND status=1 AND deleted=0 ORDER BY id</select>
 </mapper>

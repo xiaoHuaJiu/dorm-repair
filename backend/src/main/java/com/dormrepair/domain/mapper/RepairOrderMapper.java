@@ -7,6 +7,7 @@ import com.dormrepair.order.model.RepairOrderQueryCondition;
 import com.dormrepair.order.vo.RepairOrderListItem;
 import java.util.List;
 import java.time.LocalDateTime;
+import com.dormrepair.reminder.model.ReminderOrderCandidate;
 
 @Mapper
 public interface RepairOrderMapper {
@@ -30,4 +31,8 @@ public interface RepairOrderMapper {
     int casSubmitResult(@Param("id") Long id,@Param("workerId") Long workerId,@Param("repairSubmitTime") LocalDateTime repairSubmitTime);
     int casStudentConfirm(@Param("id") Long id,@Param("studentUid") Long studentUid,@Param("now") LocalDateTime now);
     int casStudentRework(@Param("id") Long id,@Param("studentUid") Long studentUid);
+    List<ReminderOrderCandidate> selectAcceptReminderCandidates(@Param("from") LocalDateTime from,@Param("to") LocalDateTime to,@Param("limit") int limit);
+    List<ReminderOrderCandidate> selectAcceptTimeoutCandidates(@Param("now") LocalDateTime now,@Param("limit") int limit);
+    List<ReminderOrderCandidate> selectCompleteReminderCandidates(@Param("from") LocalDateTime from,@Param("to") LocalDateTime to,@Param("limit") int limit);
+    List<ReminderOrderCandidate> selectCompleteTimeoutCandidates(@Param("now") LocalDateTime now,@Param("limit") int limit);
 }
