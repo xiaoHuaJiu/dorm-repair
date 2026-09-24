@@ -33,6 +33,7 @@ public enum ResultCodeEnum {
     ORDER_ACCESS_DENIED(17002, "无权访问该工单"),
     ORDER_IDEMPOTENT_PROCESSING(17003, "报修正在提交中，请勿重复操作"),
     ORDER_BIZ_NO_CONFLICT(17004, "当前提交标识已被使用，请刷新页面后重新提交"),
+    ORDER_EVALUATION_EXISTS(17005, "该工单已评价，请勿重复评价"),
     SYSTEM_ERROR(50000, "系统异常，请稍后重试");
 
     private final int code;

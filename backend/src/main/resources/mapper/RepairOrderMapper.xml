@@ -133,4 +133,6 @@
   <update id="casInterrupt">UPDATE repair_order SET status=5 WHERE id=#{id} AND deleted=0 AND status=2 AND current_assignee_id=#{workerId}</update>
   <update id="casResume">UPDATE repair_order SET status=2 WHERE id=#{id} AND deleted=0 AND status=5 AND current_assignee_id=#{workerId}</update>
   <update id="casSubmitResult">UPDATE repair_order SET status=3,repair_submit_time=#{repairSubmitTime} WHERE id=#{id} AND deleted=0 AND status IN (2,4) AND current_assignee_id=#{workerId}</update>
+  <update id="casStudentConfirm">UPDATE repair_order SET status=6,confirm_time=#{now},complete_time=#{now} WHERE id=#{id} AND student_uid=#{studentUid} AND status=3 AND deleted=0</update>
+  <update id="casStudentRework">UPDATE repair_order SET status=4,rework_count=rework_count+1,expected_complete_time=NULL,complete_deadline=NULL,exception_flag=CASE WHEN rework_count&gt;=3 THEN 1 ELSE exception_flag END WHERE id=#{id} AND student_uid=#{studentUid} AND status=3 AND deleted=0</update>
 </mapper>

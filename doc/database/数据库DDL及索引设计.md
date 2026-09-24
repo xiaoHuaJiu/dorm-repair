@@ -1897,3 +1897,7 @@ sys_operation_log
 **基础配置 → 学生报修 → 自动派单 → 维修人员接单 → 维修过程/材料 → 完工确认 → 转派 → 返工 → 请假转派 → 超时提醒。**
 
 这样每完成一阶段，前面的业务链路都是可独立测试和验收的。
+
+## PLAN-7 增量
+
+新增 `repair_order_alert`，正式表总数为 21。`uk_order_alert_rework_type(order_id,rework_no,alert_type)` 防止同一轮重复告警；`idx_order_alert_status_time(alert_status,create_time)` 支持管理员查询待处理告警。

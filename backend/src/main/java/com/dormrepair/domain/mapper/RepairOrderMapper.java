@@ -27,4 +27,6 @@ public interface RepairOrderMapper {
     int casInterrupt(@Param("id") Long id,@Param("workerId") Long workerId);
     int casResume(@Param("id") Long id,@Param("workerId") Long workerId);
     int casSubmitResult(@Param("id") Long id,@Param("workerId") Long workerId,@Param("repairSubmitTime") LocalDateTime repairSubmitTime);
+    int casStudentConfirm(@Param("id") Long id,@Param("studentUid") Long studentUid,@Param("now") LocalDateTime now);
+    int casStudentRework(@Param("id") Long id,@Param("studentUid") Long studentUid);
 }

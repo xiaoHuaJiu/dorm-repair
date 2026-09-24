@@ -7,7 +7,7 @@ $formalTables = @(
     'repair_worker_area_scope','repair_work_schedule','repair_order','repair_process_record',
     'repair_material_usage','repair_transfer_request','repair_leave_request','repair_rework_record',
     'repair_evaluation','repair_order_flow','repair_reminder_record','repair_holiday_calendar',
-    'repair_dispatch_alert','sys_idempotent_record','sys_operation_log'
+    'repair_dispatch_alert','repair_order_alert','sys_idempotent_record','sys_operation_log'
 )
 $requiredIndexes = @(
     'idx_order_duplicate_check','idx_order_assignee_status','idx_order_status_report',
@@ -19,7 +19,8 @@ $requiredIndexes = @(
     'idx_material_order_time','idx_material_worker_time','uk_rework_order_no',
     'idx_rework_order_time','idx_rework_admin','idx_flow_order_time',
     'uk_evaluation_order','uk_reminder_deduplicate','uk_idempotent_biz_user_no',
-    'uk_holiday_date','idx_holiday_year','uk_dispatch_alert_open','idx_dispatch_alert_status_time'
+    'uk_holiday_date','idx_holiday_year','uk_dispatch_alert_open','idx_dispatch_alert_status_time',
+    'uk_order_alert_rework_type','idx_order_alert_status_time'
 )
 
 function Invoke-DatabaseScalar([string]$Sql) {
@@ -44,4 +45,4 @@ $actualIndexes = Invoke-DatabaseScalar "SELECT DISTINCT index_name FROM informat
 $missingIndexes = @($requiredIndexes | Where-Object { $_ -notin $actualIndexes })
 if ($missingIndexes.Count -gt 0) { throw "缺少关键索引：$($missingIndexes -join ', ')" }
 
-Write-Output "数据库结构验证通过：正式表 $($actualTables.Count)/20，关键索引 $($actualIndexes.Count)/$($requiredIndexes.Count)，外键 0。"
+Write-Output "数据库结构验证通过：正式表 $($actualTables.Count)/21，关键索引 $($actualIndexes.Count)/$($requiredIndexes.Count)，外键 0。"

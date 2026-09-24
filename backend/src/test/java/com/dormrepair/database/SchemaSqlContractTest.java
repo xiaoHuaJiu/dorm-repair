@@ -19,11 +19,11 @@ class SchemaSqlContractTest {
         "repair_order", "repair_process_record", "repair_material_usage",
         "repair_transfer_request", "repair_leave_request", "repair_rework_record",
         "repair_evaluation", "repair_order_flow", "repair_reminder_record", "repair_holiday_calendar",
-        "repair_dispatch_alert", "sys_idempotent_record", "sys_operation_log"
+        "repair_dispatch_alert", "repair_order_alert", "sys_idempotent_record", "sys_operation_log"
     );
 
     @Test
-    void schemaContainsExactlyTheTwentySafeFormalTables() throws IOException {
+    void schemaContainsExactlyTheTwentyOneSafeFormalTables() throws IOException {
         String sql = Files.readString(SCHEMA);
         Matcher matcher = Pattern.compile("(?i)CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s+`?([a-z_]+)`?").matcher(sql);
         java.util.Set<String> actual = new java.util.HashSet<>();
@@ -31,8 +31,8 @@ class SchemaSqlContractTest {
 
         assertThat(actual).containsExactlyInAnyOrderElementsOf(TABLES);
         assertThat(sql).doesNotContainIgnoringCase("DROP TABLE", "DROP DATABASE", "FOREIGN KEY");
-        assertThat(Pattern.compile("(?i)ENGINE\\s*=\\s*InnoDB").matcher(sql).results()).hasSize(20);
-        assertThat(Pattern.compile("(?i)(DEFAULT\\s+)?CHARSET\\s*=\\s*utf8mb4").matcher(sql).results()).hasSize(20);
+        assertThat(Pattern.compile("(?i)ENGINE\\s*=\\s*InnoDB").matcher(sql).results()).hasSize(21);
+        assertThat(Pattern.compile("(?i)(DEFAULT\\s+)?CHARSET\\s*=\\s*utf8mb4").matcher(sql).results()).hasSize(21);
         assertThat(Pattern.compile("(?i)INSERT\\s+INTO\\s+repair_holiday_calendar").matcher(sql).results()).hasSize(39);
     }
 
@@ -49,7 +49,8 @@ class SchemaSqlContractTest {
             "idx_process_order_type", "idx_material_order_time", "idx_material_worker_time",
             "uk_rework_order_no", "idx_rework_order_time", "idx_rework_admin",
             "idx_flow_order_time", "uk_evaluation_order", "uk_reminder_deduplicate", "uk_idempotent_biz_user_no",
-            "uk_holiday_date", "idx_holiday_year", "uk_dispatch_alert_open", "idx_dispatch_alert_status_time"
+            "uk_holiday_date", "idx_holiday_year", "uk_dispatch_alert_open", "idx_dispatch_alert_status_time",
+            "uk_order_alert_rework_type", "idx_order_alert_status_time"
         );
     }
 }

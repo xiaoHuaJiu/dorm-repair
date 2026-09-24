@@ -22,4 +22,5 @@
     WHERE id = #{id}
   </select>
   <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_evaluation WHERE order_id=#{orderId} LIMIT 1</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">INSERT INTO repair_evaluation(order_id,student_uid,worker_id,score,content) VALUES(#{orderId},#{studentUid},#{workerId},#{score},#{content})</insert>
 </mapper>

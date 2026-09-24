@@ -24,6 +24,7 @@ class MapperXmlContractTest {
         Map.entry("repair_reminder_record", "RepairReminderRecord"),
         Map.entry("repair_holiday_calendar", "RepairHolidayCalendar"),
         Map.entry("repair_dispatch_alert", "RepairDispatchAlert"),
+        Map.entry("repair_order_alert", "RepairOrderAlert"),
         Map.entry("sys_idempotent_record", "SysIdempotentRecord"),
         Map.entry("sys_operation_log", "SysOperationLog")
     );
@@ -46,5 +47,11 @@ class MapperXmlContractTest {
                 .contains("FROM " + entry.getKey())
                 .contains("WHERE id = #{id}");
         }
+    }
+
+    @Test
+    void reworkExceptionThresholdUsesIncrementedMysqlValue() throws Exception {
+        String xml = Files.readString(Path.of("src", "main", "resources", "mapper", "RepairOrderMapper.xml"));
+        assertThat(xml).contains("rework_count=rework_count+1").contains("CASE WHEN rework_count&gt;=3 THEN 1");
     }
 }

@@ -8,4 +8,5 @@ import org.apache.ibatis.annotations.Param;
 public interface RepairEvaluationMapper {
     RepairEvaluation selectById(@Param("id") Long id);
     RepairEvaluation selectByOrderId(@Param("orderId") Long orderId);
+    int insert(RepairEvaluation evaluation);
 }

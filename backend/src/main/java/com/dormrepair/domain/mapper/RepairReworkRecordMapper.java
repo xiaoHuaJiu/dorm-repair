@@ -9,4 +9,6 @@ import java.util.List;
 public interface RepairReworkRecordMapper {
     RepairReworkRecord selectById(@Param("id") Long id);
     List<RepairReworkRecord> selectByOrderId(@Param("orderId") Long orderId);
+    int insert(RepairReworkRecord record);
+    int completeCurrent(@Param("orderId") Long orderId,@Param("reworkNo") Integer reworkNo,@Param("finishTime") java.time.LocalDateTime finishTime);
 }

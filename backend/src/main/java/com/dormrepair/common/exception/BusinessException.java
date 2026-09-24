@@ -37,7 +37,7 @@ public class BusinessException extends RuntimeException {
             case ORDER_ACCESS_DENIED -> HttpStatus.FORBIDDEN;
             case DATA_CONFLICT, USERNAME_EXISTS, FAULT_CODE_EXISTS, AREA_DUPLICATE,
                 WORKER_NO_EXISTS, WORKER_USER_EXISTS, SCHEDULE_CONFLICT,
-                ORDER_IDEMPOTENT_PROCESSING, ORDER_BIZ_NO_CONFLICT -> HttpStatus.CONFLICT;
+                ORDER_IDEMPOTENT_PROCESSING, ORDER_BIZ_NO_CONFLICT, ORDER_EVALUATION_EXISTS -> HttpStatus.CONFLICT;
             default -> HttpStatus.BAD_REQUEST;
         };
     }

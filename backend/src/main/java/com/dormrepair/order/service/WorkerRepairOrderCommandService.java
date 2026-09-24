@@ -25,12 +25,13 @@ public class WorkerRepairOrderCommandService {
     private final SysOperationLogMapper logs;
     private final CurrentWorkerResolver workerResolver;
     private final ObjectMapper objectMapper;
+    private final RepairReworkRecordMapper reworks;
 
     public WorkerRepairOrderCommandService(RepairOrderMapper orders, RepairProcessRecordMapper processes,
         RepairMaterialUsageMapper materials, RepairOrderFlowMapper flows, SysOperationLogMapper logs,
-        CurrentWorkerResolver workerResolver, ObjectMapper objectMapper) {
+        CurrentWorkerResolver workerResolver, ObjectMapper objectMapper, RepairReworkRecordMapper reworks) {
         this.orders = orders; this.processes = processes; this.materials = materials; this.flows = flows;
-        this.logs = logs; this.workerResolver = workerResolver; this.objectMapper = objectMapper;
+        this.logs = logs; this.workerResolver = workerResolver; this.objectMapper = objectMapper; this.reworks = reworks;
     }
 
     @Transactional
@@ -90,6 +91,7 @@ public class WorkerRepairOrderCommandService {
         Actor actor = actor(); LocalDateTime now = LocalDateTime.now(); RepairOrder order = locked(orderId);
         requireOwner(order, actor.workerId()); requireStatus(order, 2, 4);
         if (orders.casSubmitResult(orderId, actor.workerId(), now) != 1) conflict("工单状态已变化，请刷新后重试");
+        if (Integer.valueOf(4).equals(order.getStatus()) && reworks.completeCurrent(orderId, order.getReworkCount(), now) != 1) conflict("当前返工记录不存在或已完成");
         addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.SUBMIT_RESULT.getCode(), request.resultDescription(), request.resultImageUrls(), null, now);
         addFlow(order, actor, RepairOrderOperationTypeEnum.SUBMIT_RESULT, order.getStatus(), 3, request.resultDescription(), now);
         addLog(actor, orderId, "提交维修结果", "/api/worker/repair-orders/" + orderId + "/submit-result", now);

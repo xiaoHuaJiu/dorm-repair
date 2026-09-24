@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairOrderAlertMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairOrderAlert">
+    <id column="id" property="id"/><result column="order_id" property="orderId"/><result column="rework_no" property="reworkNo"/>
+    <result column="alert_type" property="alertType"/><result column="alert_level" property="alertLevel"/><result column="alert_status" property="alertStatus"/>
+    <result column="alert_content" property="alertContent"/><result column="handled_by" property="handledBy"/><result column="handled_time" property="handledTime"/>
+    <result column="create_time" property="createTime"/><result column="update_time" property="updateTime"/>
+  </resultMap>
+  <sql id="Base_Column_List">id,order_id,rework_no,alert_type,alert_level,alert_status,alert_content,handled_by,handled_time,create_time,update_time</sql>
+  <select id="selectById" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_order_alert WHERE id = #{id}</select>
+  <insert id="insertIgnore" useGeneratedKeys="true" keyProperty="id">INSERT IGNORE INTO repair_order_alert(order_id,rework_no,alert_type,alert_level,alert_status,alert_content) VALUES(#{orderId},#{reworkNo},#{alertType},#{alertLevel},#{alertStatus},#{alertContent})</insert>
+</mapper>

@@ -26,4 +26,6 @@
     WHERE id = #{id}
   </select>
   <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_rework_record WHERE order_id=#{orderId} AND deleted=0 ORDER BY rework_no ASC,id ASC</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">INSERT INTO repair_rework_record(order_id,rework_no,applicant_uid,reason,image_urls,original_assignee_id,status,admin_intervention,deleted) VALUES(#{orderId},#{reworkNo},#{applicantUid},#{reason},#{imageUrls},#{originalAssigneeId},#{status},#{adminIntervention},#{deleted})</insert>
+  <update id="completeCurrent">UPDATE repair_rework_record SET status=1,finish_time=#{finishTime} WHERE order_id=#{orderId} AND rework_no=#{reworkNo} AND status=0 AND deleted=0</update>
 </mapper>
