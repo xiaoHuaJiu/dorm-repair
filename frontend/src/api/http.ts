@@ -9,6 +9,9 @@ import { runtimeConfig } from '../config/env'
 export const http = axios.create({
   baseURL: runtimeConfig.apiBaseUrl,
   timeout: runtimeConfig.requestTimeoutMs,
+  // 数组参数按重复参数序列化（statusList=0&statusList=1），与后端 @ModelAttribute
+  // 绑定 List 字段的契约一致；axios 默认的空方括号形式（statusList[]=0）Spring 无法绑定。
+  paramsSerializer: { indexes: null },
 })
 
 export interface RequestConfig extends AxiosRequestConfig {

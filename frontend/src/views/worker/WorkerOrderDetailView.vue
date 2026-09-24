@@ -6,6 +6,7 @@ import PageState from '@/components/common/PageState.vue'
 import OrderStatusTag from '@/components/common/OrderStatusTag.vue'
 import OrderTimeline from '@/components/common/OrderTimeline.vue'
 import FormDialog from '@/components/common/FormDialog.vue'
+import FileGallery from '@/components/common/FileGallery.vue'
 import { workerOrderDetail, acceptRepairOrder, interruptRepair, resumeRepair } from '@/api/order'
 import { enabledAreaTree } from '@/api/area'
 import { listEnabledFaultTypes } from '@/api/faultType'
@@ -218,6 +219,7 @@ onMounted(load)
                 </div>
               </div>
               <p class="order-description">{{ detail.baseInfo.problemDescription }}</p>
+              <FileGallery :files="detail.baseInfo.files" />
 
               <div class="inline-actions order-actions-row">
                 <button
@@ -264,6 +266,30 @@ onMounted(load)
                 <span class="muted">共 {{ detail.flows.length }} 个节点</span>
               </div>
               <OrderTimeline :flows="detail.flows" />
+            </section>
+
+            <section v-if="detail.processRecords.length" class="card section">
+              <div class="section-title">
+                <h2>处理记录</h2>
+                <span class="muted">共 {{ detail.processRecords.length }} 条</span>
+              </div>
+              <div v-for="record in detail.processRecords" :key="record.id" class="process-item">
+                <small>{{ record.recordTime }}</small>
+                <p>{{ record.content }}</p>
+                <FileGallery :files="record.files" />
+              </div>
+            </section>
+
+            <section v-if="detail.reworkRecords.length" class="card section">
+              <div class="section-title">
+                <h2>返工记录</h2>
+                <span class="muted">共 {{ detail.reworkRecords.length }} 次</span>
+              </div>
+              <div v-for="record in detail.reworkRecords" :key="record.id" class="process-item">
+                <small>第 {{ record.reworkNo }} 次返工 · {{ record.createTime }}</small>
+                <p>{{ record.reason }}</p>
+                <FileGallery :files="record.files" />
+              </div>
             </section>
           </div>
 
@@ -373,6 +399,17 @@ onMounted(load)
 
 .order-actions-row {
   margin-top: 16px;
+}
+
+.process-item {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--dr-color-border);
+}
+
+.process-item:last-child {
+  border-bottom: none;
 }
 
 .split-main {

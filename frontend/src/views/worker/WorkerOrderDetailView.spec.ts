@@ -68,6 +68,7 @@ function detail(overrides: Partial<OrderDetail> = {}): OrderDetail {
       faultTypeId: 5,
       problemDescription: '洗手池持续漏水，阀门关闭后仍然滴水。',
       imageUrls: null,
+      files: [],
       status: 2,
       currentAssigneeId: 11,
       dispatchTime: '2026-09-20 09:41:00',

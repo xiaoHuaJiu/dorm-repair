@@ -48,12 +48,16 @@ describe('工单操作类型', () => {
       INTERRUPT: 4,
       RESUME: 5,
       SUBMIT_RESULT: 6,
+      STUDENT_CONFIRM: 7,
+      REWORK: 8,
     })
   })
 
   it('每个操作类型都有文案，未知操作类型回退', () => {
     expect(ORDER_OPERATION_LABEL[ORDER_OPERATION.ACCEPT]).toBe('接单')
     expect(orderOperationLabel(ORDER_OPERATION.SUBMIT_RESULT)).toBe('提交维修结果')
+    expect(orderOperationLabel(ORDER_OPERATION.STUDENT_CONFIRM)).toBe('确认维修完成')
+    expect(orderOperationLabel(ORDER_OPERATION.REWORK)).toBe('申请返工')
     expect(orderOperationLabel(99)).toBe('状态更新')
   })
 })

@@ -3,11 +3,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { http } from './http'
 import {
   checkRepairDuplicate,
+  confirmRepairOrder,
   createRepairOrder,
   pageAdminOrders,
   pageStudentOrders,
   pageWorkerOrders,
   studentOrderDetail,
+  submitRepairEvaluation,
+  submitRepairRework,
   workerOrderDetail,
   adminOrderDetail,
 } from './order'
@@ -89,14 +92,34 @@ describe('工单接口模块', () => {
       problemDescription: '水龙头漏水',
       contactName: '林同学',
       contactPhone: '13800138000',
-      imageUrls: [],
+      fileIds: [3, 5],
       confirmDuplicate: false,
     })
     expect((result as unknown as { body: unknown }).body).toMatchObject({
       bizNo: 'biz-1',
       problemDescription: '水龙头漏水',
       contactName: '林同学',
+      fileIds: [3, 5],
       confirmDuplicate: false,
     })
+  })
+
+  it('学生确认完成请求对应端 confirm 路径', async () => {
+    mock.onPost('/student/repair-orders/12/confirm').reply(200, { code: 0, message: 'success', data: null })
+    await expect(confirmRepairOrder(12)).resolves.toBeNull()
+  })
+
+  it('学生提交评价携带评分与内容', async () => {
+    mock.onPost('/student/repair-orders/12/evaluation').reply(200, { code: 0, message: 'success', data: null })
+
+    await submitRepairEvaluation(12, { score: 5, content: '师傅很专业' })
+    expect(JSON.parse(mock.history.post.at(-1)?.data as string)).toMatchObject({ score: 5, content: '师傅很专业' })
+  })
+
+  it('学生申请返工携带原因与附件引用', async () => {
+    mock.onPost('/student/repair-orders/12/rework').reply(200, { code: 0, message: 'success', data: null })
+
+    await submitRepairRework(12, { reason: '仍有渗水', fileIds: [8] })
+    expect(JSON.parse(mock.history.post.at(-1)?.data as string)).toMatchObject({ reason: '仍有渗水', fileIds: [8] })
   })
 })

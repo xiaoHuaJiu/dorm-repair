@@ -4,8 +4,10 @@ import type {
   AddMaterialUsageRequest,
   AddRepairProcessRequest,
   AcceptRepairOrderRequest,
+  CreateRepairEvaluationRequest,
   CreateRepairOrderRequest,
   CreateRepairOrderResponse,
+  CreateReworkRequest,
   DuplicateCheckRequest,
   DuplicateCheckResponse,
   InterruptRepairRequest,
@@ -95,4 +97,19 @@ export function resumeRepair(id: number, data?: ResumeRepairRequest): Promise<nu
 /** 维修人员提交维修结果。 */
 export function submitRepairResult(id: number, data: SubmitRepairResultRequest): Promise<null> {
   return request<null>({ method: 'POST', url: `/worker/repair-orders/${id}/submit-result`, data })
+}
+
+/** 学生确认维修完成。 */
+export function confirmRepairOrder(id: number): Promise<null> {
+  return request<null>({ method: 'POST', url: `/student/repair-orders/${id}/confirm` })
+}
+
+/** 学生提交服务评价（1-5 星）。 */
+export function submitRepairEvaluation(id: number, data: CreateRepairEvaluationRequest): Promise<null> {
+  return request<null>({ method: 'POST', url: `/student/repair-orders/${id}/evaluation`, data })
+}
+
+/** 学生申请返工。 */
+export function submitRepairRework(id: number, data: CreateReworkRequest): Promise<null> {
+  return request<null>({ method: 'POST', url: `/student/repair-orders/${id}/rework`, data })
 }

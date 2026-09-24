@@ -5,6 +5,7 @@ import MobileAppShell from '@/layouts/MobileAppShell.vue'
 import PageState from '@/components/common/PageState.vue'
 import OrderStatusTag from '@/components/common/OrderStatusTag.vue'
 import OrderTimeline from '@/components/common/OrderTimeline.vue'
+import FileGallery from '@/components/common/FileGallery.vue'
 import { studentOrderDetail } from '@/api/order'
 import { enabledAreaTree } from '@/api/area'
 import { listEnabledFaultTypes } from '@/api/faultType'
@@ -142,6 +143,19 @@ onMounted(load)
             </div>
           </div>
           <p class="order-description">{{ detail.baseInfo.problemDescription }}</p>
+          <FileGallery :files="detail.baseInfo.files" />
+        </section>
+
+        <section v-if="detail.reworkRecords.length" class="card section">
+          <div class="section-title">
+            <h2>返工记录</h2>
+            <span class="muted">共 {{ detail.reworkRecords.length }} 次</span>
+          </div>
+          <div v-for="record in detail.reworkRecords" :key="record.id" class="rework-item">
+            <small>第 {{ record.reworkNo }} 次返工 · {{ record.createTime }}</small>
+            <p>{{ record.reason }}</p>
+            <FileGallery :files="record.files" />
+          </div>
         </section>
 
         <section class="card section">
@@ -179,5 +193,16 @@ onMounted(load)
   margin: 14px 0 0;
   color: var(--dr-color-text-secondary);
   white-space: pre-wrap;
+}
+
+.rework-item {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--dr-color-border);
+}
+
+.rework-item:last-child {
+  border-bottom: none;
 }
 </style>

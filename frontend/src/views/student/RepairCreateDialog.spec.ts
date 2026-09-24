@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { areaChildren } from '@/api/area'
+import { deleteFile, uploadFile } from '@/api/file'
 import { listEnabledFaultTypes } from '@/api/faultType'
 import { checkRepairDuplicate, createRepairOrder } from '@/api/order'
 import { notifySuccess } from '@/api/successNotifier'
@@ -9,6 +10,11 @@ import RepairCreateDialog from './RepairCreateDialog.vue'
 
 vi.mock('@/api/area', () => ({
   areaChildren: vi.fn(),
+}))
+
+vi.mock('@/api/file', () => ({
+  uploadFile: vi.fn(),
+  deleteFile: vi.fn(),
 }))
 
 vi.mock('@/api/faultType', () => ({
@@ -28,6 +34,8 @@ const mockedChildren = vi.mocked(areaChildren)
 const mockedFaultTypes = vi.mocked(listEnabledFaultTypes)
 const mockedCheck = vi.mocked(checkRepairDuplicate)
 const mockedCreate = vi.mocked(createRepairOrder)
+const mockedUpload = vi.mocked(uploadFile)
+const mockedDelete = vi.mocked(deleteFile)
 const mockedNotifySuccess = vi.mocked(notifySuccess)
 
 function node(id: number, name: string): AreaDetail {
@@ -66,7 +74,10 @@ describe('提交报修弹窗', () => {
     mockedFaultTypes.mockReset()
     mockedCheck.mockReset()
     mockedCreate.mockReset()
+    mockedUpload.mockReset()
+    mockedDelete.mockReset()
     mockedNotifySuccess.mockReset()
+    mockedDelete.mockResolvedValue(null)
     mockedChildren.mockImplementation((parentId: number) => {
       if (parentId === 0) return Promise.resolve([node(1, '东校区')])
       if (parentId === 1) return Promise.resolve([node(2, '学生生活区')])
@@ -182,5 +193,38 @@ describe('提交报修弹窗', () => {
     await flushPromises()
 
     expect(wrapper.find('.modal .error').text()).toBe('重复提交过于频繁')
+  })
+
+  it('上传现场图片后提交携带 fileIds，移除时删除未绑定文件', async () => {
+    mockedUpload.mockResolvedValue({
+      fileId: 9,
+      originalName: 'a.jpg',
+      fileType: 'IMAGE',
+      contentType: 'image/jpeg',
+      fileSize: 10,
+      previewUrl: 'https://example.com/a.jpg',
+    })
+    const wrapper = await mountDialog()
+    await fillForm(wrapper)
+
+    const input = wrapper.find('input[type="file"]')
+    const file = new File(['x'], 'a.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(input.element, 'files', { value: [file] })
+    await input.trigger('change')
+    await flushPromises()
+
+    expect(mockedUpload).toHaveBeenCalledWith(file, 'REPAIR')
+    expect(wrapper.find('.thumb img').exists()).toBe(true)
+
+    // 移除图片后删除未绑定文件并清空列表。
+    await wrapper.find('.thumb-remove').trigger('click')
+    await flushPromises()
+    expect(mockedDelete).toHaveBeenCalledWith(9)
+    expect(wrapper.find('.thumb img').exists()).toBe(false)
+
+    await wrapper.find('.modal-actions .btn.primary').trigger('click')
+    await flushPromises()
+
+    expect(mockedCreate).toHaveBeenCalledWith(expect.objectContaining({ fileIds: [] }))
   })
 })

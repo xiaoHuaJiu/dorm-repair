@@ -29,6 +29,14 @@ describe('统一请求', () => {
     expect(notify).not.toHaveBeenCalled()
   })
 
+  it('数组查询参数按重复参数序列化以匹配后端 List 绑定', () => {
+    const uri = http.getUri({
+      url: '/student/repair-orders',
+      params: { pageNum: 1, pageSize: 50, statusList: [0, 1, 2] },
+    })
+    expect(uri).toBe('/api/student/repair-orders?pageNum=1&pageSize=50&statusList=0&statusList=1&statusList=2')
+  })
+
   it('为已登录请求附加 Bearer 令牌', async () => {
     localStorage.setItem('dorm-repair-token', 'jwt-token')
     mock.onGet('/authorized').reply((config) => [200, {

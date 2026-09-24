@@ -1,7 +1,8 @@
 /**
- * 工单公共类型。字段与后端 `RepairOrderListItem`、`RepairOrderFlow` 已确认契约一致；
- * 完整领域类型（详情聚合、操作权限等）在 F5 阶段统一定义。
+ * 工单公共类型。字段与后端 `RepairOrderListItem`、`RepairOrderDetailResponse`
+ * 及各类操作请求/响应契约一致。
  */
+import type { OrderFile } from './file'
 
 /** 三端工单列表记录。 */
 export interface OrderListItem {
@@ -66,7 +67,10 @@ export interface OrderBaseInfo {
   locationDetail: string | null
   faultTypeId: number
   problemDescription: string
+  /** 旧字段，仅兼容保留；图片统一走 files。 */
   imageUrls: string | null
+  /** 报修图片列表（后端 `FileResponse`）。 */
+  files: OrderFile[]
   status: number
   currentAssigneeId: number | null
   dispatchTime: string | null
@@ -94,7 +98,8 @@ export interface OrderProcessRecord {
   /** 1 普通过程、2 中断、3 恢复、4 提交维修结果。 */
   recordType: number
   content: string
-  imageUrls: string | null
+  /** 过程图片列表（后端 `FileResponse`）。 */
+  files: OrderFile[]
   interruptReasonType: number | null
   recordTime: string
   createTime: string
@@ -121,7 +126,8 @@ export interface OrderReworkRecord {
   reworkNo: number
   applicantUid: number
   reason: string
-  imageUrls: string | null
+  /** 返工图片列表（后端 `FileResponse`）。 */
+  files: OrderFile[]
   originalAssigneeId: number | null
   status: number
   adminIntervention: number
@@ -184,8 +190,8 @@ export interface CreateRepairOrderRequest extends DuplicateCheckRequest {
   problemDescription: string
   contactName: string
   contactPhone: string
-  /** 最多 9 张图片地址。 */
-  imageUrls?: string[]
+  /** 已上传完成的附件引用，最多 9 个。 */
+  fileIds?: number[]
   /** 疑似重复时用户是否仍然提交。 */
   confirmDuplicate: boolean
 }
@@ -209,7 +215,7 @@ export interface AcceptRepairOrderRequest {
 export interface AddRepairProcessRequest {
   content: string
   /** 已上传完成的附件引用，最多 9 个。 */
-  imageUrls?: string[]
+  fileIds?: number[]
 }
 
 /** 材料使用登记请求。字段与后端 `AddMaterialUsageRequest` 一致。 */
@@ -237,7 +243,21 @@ export interface ResumeRepairRequest {
 export interface SubmitRepairResultRequest {
   resultDescription: string
   /** 已上传完成的附件引用，最多 9 个。 */
-  resultImageUrls?: string[]
+  fileIds?: number[]
+}
+
+/** 学生提交服务评价请求。字段与后端 `CreateRepairEvaluationRequest` 一致。 */
+export interface CreateRepairEvaluationRequest {
+  /** 1-5 星。 */
+  score: number
+  content?: string
+}
+
+/** 学生申请返工请求。字段与后端 `CreateReworkRequest` 一致。 */
+export interface CreateReworkRequest {
+  reason: string
+  /** 已上传完成的附件引用，最多 9 个。 */
+  fileIds?: number[]
 }
 
 /** 三端工单分页查询参数。字段与后端 `RepairOrderQueryRequest` 一致。 */

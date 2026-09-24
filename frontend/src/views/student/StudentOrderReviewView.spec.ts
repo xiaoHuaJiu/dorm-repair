@@ -4,15 +4,29 @@ import { createMemoryHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import { createAppRouter } from '@/router'
 import { useAppStore } from '@/stores/app'
-import { studentOrderDetail } from '@/api/order'
+import { confirmRepairOrder, studentOrderDetail, submitRepairEvaluation, submitRepairRework } from '@/api/order'
+import { deleteFile, uploadFile } from '@/api/file'
 import type { OrderDetail } from '@/types/order'
 import StudentOrderReviewView from './StudentOrderReviewView.vue'
 
 vi.mock('@/api/order', () => ({
   studentOrderDetail: vi.fn(),
+  confirmRepairOrder: vi.fn(),
+  submitRepairEvaluation: vi.fn(),
+  submitRepairRework: vi.fn(),
+}))
+
+vi.mock('@/api/file', () => ({
+  uploadFile: vi.fn(),
+  deleteFile: vi.fn(),
 }))
 
 const mockedDetail = vi.mocked(studentOrderDetail)
+const mockedConfirm = vi.mocked(confirmRepairOrder)
+const mockedEvaluation = vi.mocked(submitRepairEvaluation)
+const mockedRework = vi.mocked(submitRepairRework)
+const mockedUpload = vi.mocked(uploadFile)
+const mockedDelete = vi.mocked(deleteFile)
 
 function detail(status: number, processRecords: OrderDetail['processRecords'] = [], evaluation: OrderDetail['evaluation'] = null): OrderDetail {
   return {
@@ -30,6 +44,7 @@ function detail(status: number, processRecords: OrderDetail['processRecords'] = 
       faultTypeId: 5,
       problemDescription: '洗手池持续漏水，阀门关闭后仍然滴水。',
       imageUrls: null,
+      files: [],
       status,
       currentAssigneeId: 11,
       dispatchTime: null,
@@ -71,12 +86,21 @@ async function mountView() {
 describe('验收维修结果', () => {
   beforeEach(() => {
     mockedDetail.mockReset()
+    mockedConfirm.mockReset()
+    mockedEvaluation.mockReset()
+    mockedRework.mockReset()
+    mockedUpload.mockReset()
+    mockedDelete.mockReset()
+    mockedConfirm.mockResolvedValue(null)
+    mockedEvaluation.mockResolvedValue(null)
+    mockedRework.mockResolvedValue(null)
+    mockedDelete.mockResolvedValue(null)
   })
 
   it('展示最新一条提交维修结果说明', async () => {
     mockedDetail.mockResolvedValue(detail(3, [
-      { id: 1, orderId: 1001, workerId: 11, recordType: 1, content: '检查中', imageUrls: null, interruptReasonType: null, recordTime: '2026-09-20 10:00:00', createTime: '2026-09-20 10:00:00' },
-      { id: 2, orderId: 1001, workerId: 11, recordType: 4, content: '已更换密封圈，不再渗水。', imageUrls: null, interruptReasonType: null, recordTime: '2026-09-20 11:30:00', createTime: '2026-09-20 11:30:00' },
+      { id: 1, orderId: 1001, workerId: 11, recordType: 1, content: '检查中', files: [], interruptReasonType: null, recordTime: '2026-09-20 10:00:00', createTime: '2026-09-20 10:00:00' },
+      { id: 2, orderId: 1001, workerId: 11, recordType: 4, content: '已更换密封圈，不再渗水。', files: [], interruptReasonType: null, recordTime: '2026-09-20 11:30:00', createTime: '2026-09-20 11:30:00' },
     ]))
     const { wrapper } = await mountView()
     await flushPromises()
@@ -92,7 +116,7 @@ describe('验收维修结果', () => {
     expect(wrapper.text()).toContain('维修人员尚未提交完成说明')
   })
 
-  it('待确认状态：确认与返工按钮禁用并提示接口待后端提供', async () => {
+  it('待确认状态展示确认与返工按钮，点击确认调用接口并刷新', async () => {
     mockedDetail.mockResolvedValue(detail(3))
     const { wrapper } = await mountView()
     await flushPromises()
@@ -100,14 +124,50 @@ describe('验收维修结果', () => {
     const confirmButton = wrapper.find('.inline-actions .btn.primary')
     const reworkButton = wrapper.find('.inline-actions .btn.danger')
     expect(confirmButton.exists()).toBe(true)
-    expect(confirmButton.attributes('disabled')).toBeDefined()
-    expect(confirmButton.attributes('title')).toBe('确认完成接口待后端提供')
-    expect(reworkButton.attributes('disabled')).toBeDefined()
-    expect(reworkButton.attributes('title')).toBe('返工申请接口待后端提供')
+    expect(confirmButton.attributes('disabled')).toBeUndefined()
+    expect(reworkButton.exists()).toBe(true)
     expect(wrapper.find('.stars').exists()).toBe(false)
+
+    await confirmButton.trigger('click')
+    await flushPromises()
+
+    expect(mockedConfirm).toHaveBeenCalledWith(1001)
+    expect(mockedDetail).toHaveBeenCalledTimes(2)
   })
 
-  it('已完成状态展示评价区，星标可选，提交评价禁用', async () => {
+  it('待确认状态打开返工弹窗，填写原因并上传图片后提交', async () => {
+    mockedUpload.mockResolvedValue({
+      fileId: 8,
+      originalName: 'r.jpg',
+      fileType: 'IMAGE',
+      contentType: 'image/jpeg',
+      fileSize: 10,
+      previewUrl: 'https://example.com/r.jpg',
+    })
+    mockedDetail.mockResolvedValue(detail(3))
+    const { wrapper } = await mountView()
+    await flushPromises()
+
+    await wrapper.find('.inline-actions .btn.danger').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('申请返工')
+
+    const input = wrapper.find('input[type="file"]')
+    const file = new File(['x'], 'r.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(input.element, 'files', { value: [file] })
+    await input.trigger('change')
+    await flushPromises()
+    expect(mockedUpload).toHaveBeenCalledWith(file, 'REWORK')
+
+    await wrapper.find('#rework-reason').setValue('仍有渗水')
+    await wrapper.find('.modal-actions .btn.primary').trigger('click')
+    await flushPromises()
+
+    expect(mockedRework).toHaveBeenCalledWith(1001, { reason: '仍有渗水', fileIds: [8] })
+    expect(mockedDetail).toHaveBeenCalledTimes(2)
+  })
+
+  it('已完成状态展示评价区，选择星级后提交评价', async () => {
     mockedDetail.mockResolvedValue(detail(6))
     const { wrapper } = await mountView()
     await flushPromises()
@@ -123,9 +183,24 @@ describe('验收维修结果', () => {
     expect(stars[3].classes()).not.toContain('active')
 
     const submitRating = wrapper.find('.btn.submit-rating')
-    expect(submitRating.text()).toBe('提交评价')
-    expect(submitRating.attributes('disabled')).toBeDefined()
-    expect(submitRating.attributes('title')).toBe('评价接口待后端提供')
+    expect(submitRating.attributes('disabled')).toBeUndefined()
+    await submitRating.trigger('click')
+    await flushPromises()
+
+    expect(mockedEvaluation).toHaveBeenCalledWith(1001, { score: 3, content: undefined })
+    expect(mockedDetail).toHaveBeenCalledTimes(2)
+  })
+
+  it('未选择星级时提交评价提示校验错误', async () => {
+    mockedDetail.mockResolvedValue(detail(6))
+    const { wrapper } = await mountView()
+    await flushPromises()
+
+    await wrapper.find('.btn.submit-rating').trigger('click')
+    await flushPromises()
+
+    expect(mockedEvaluation).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('请选择评分')
   })
 
   it('已有评价时展示评分并禁用编辑', async () => {

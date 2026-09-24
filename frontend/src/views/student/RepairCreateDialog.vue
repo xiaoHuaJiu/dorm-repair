@@ -4,10 +4,12 @@ import FormDialog from '@/components/common/FormDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import ImageUploader from '@/components/common/ImageUploader.vue'
 import { areaChildren } from '@/api/area'
+import { deleteFile, uploadFile } from '@/api/file'
 import { listEnabledFaultTypes } from '@/api/faultType'
 import { checkRepairDuplicate, createRepairOrder } from '@/api/order'
 import { notifySuccess } from '@/api/successNotifier'
 import type { AreaDetail, FaultTypeItem } from '@/types/config'
+import type { OrderFile } from '@/types/file'
 import type { SuspectedOrder } from '@/types/order'
 
 const props = defineProps<{ visible: boolean }>()
@@ -45,7 +47,8 @@ const locationDetail = ref('')
 const problemDescription = ref('')
 const contactName = ref('')
 const contactPhone = ref('')
-const imageUrls = ref<string[]>([])
+/** 已上传的现场图片；提交时仅传 fileId，弹窗关闭时未绑定文件会被删除。 */
+const images = ref<OrderFile[]>([])
 
 function newBizNo(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
@@ -108,7 +111,7 @@ function resetForm() {
   problemDescription.value = ''
   contactName.value = ''
   contactPhone.value = ''
-  imageUrls.value = []
+  images.value = []
   error.value = ''
   duplicateVisible.value = false
   suspectedOrders.value = []
@@ -150,9 +153,29 @@ function buildPayload(confirmDuplicate: boolean) {
     problemDescription: problemDescription.value.trim(),
     contactName: contactName.value.trim(),
     contactPhone: contactPhone.value.trim(),
-    imageUrls: imageUrls.value,
+    fileIds: images.value.map((item) => item.fileId),
     confirmDuplicate,
   }
+}
+
+/** 选择图片后逐张上传，失败信息并入表单错误提示。 */
+async function onAddFiles(files: File[]) {
+  let firstError = ''
+  for (const file of files) {
+    try {
+      const item = await uploadFile(file, 'REPAIR')
+      images.value = [...images.value, item]
+    } catch (cause) {
+      if (!firstError) firstError = cause instanceof Error ? cause.message : '图片上传失败'
+    }
+  }
+  if (firstError) error.value = firstError
+}
+
+/** 移除图片：从列表移除并删除未绑定文件；删除失败由后端孤儿清理兜底。 */
+function onRemoveFile(file: OrderFile) {
+  images.value = images.value.filter((item) => item.fileId !== file.fileId)
+  void deleteFile(file.fileId).catch(() => undefined)
 }
 
 async function doSubmit(confirmDuplicate: boolean) {
@@ -222,6 +245,8 @@ function forceSubmit() {
 
 function close() {
   if (loading.value) return
+  // 关闭即放弃未绑定文件，删除释放存储（已绑定的文件删除会失败并静默忽略）。
+  for (const item of images.value) void deleteFile(item.fileId).catch(() => undefined)
   emit('update:visible', false)
 }
 </script>
@@ -285,9 +310,7 @@ function close() {
       </div>
       <div class="field">
         <label for="modal-photo">现场图片（可选）</label>
-        <ImageUploader v-model="imageUrls" :max="9" disabled>
-          <template #hint>图片上传接口待后端提供，暂不可上传。</template>
-        </ImageUploader>
+        <ImageUploader v-model="images" :max="9" @add-files="onAddFiles" @remove-file="onRemoveFile" />
       </div>
       <div class="grid two">
         <div class="field">

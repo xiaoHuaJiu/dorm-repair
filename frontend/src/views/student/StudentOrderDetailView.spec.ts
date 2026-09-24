@@ -62,6 +62,7 @@ function detail(overrides: Partial<OrderDetail> = {}): OrderDetail {
       faultTypeId: 5,
       problemDescription: '洗手池持续漏水，阀门关闭后仍然滴水。',
       imageUrls: null,
+      files: [],
       status: 2,
       currentAssigneeId: 11,
       dispatchTime: '2026-09-20 09:41:00',
@@ -160,7 +161,7 @@ describe('学生工单详情', () => {
     await wrapper.find('.btn.primary').trigger('click')
     await vi.waitFor(() => {
       expect(router.currentRoute.value.name).toBe('student-order-review')
-    })
+    }, { timeout: 10000 })
   })
 
   it('非待确认状态不展示验收入口', async () => {

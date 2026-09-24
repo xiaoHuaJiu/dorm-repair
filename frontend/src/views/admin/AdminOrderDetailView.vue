@@ -5,6 +5,7 @@ import AdminAppShell from '@/layouts/AdminAppShell.vue'
 import PageState from '@/components/common/PageState.vue'
 import OrderStatusTag from '@/components/common/OrderStatusTag.vue'
 import OrderTimeline from '@/components/common/OrderTimeline.vue'
+import FileGallery from '@/components/common/FileGallery.vue'
 import { adminOrderDetail } from '@/api/order'
 import { enabledAreaTree } from '@/api/area'
 import { listEnabledFaultTypes } from '@/api/faultType'
@@ -143,6 +144,7 @@ onMounted(load)
                 </div>
               </div>
               <p class="order-description">{{ detail.baseInfo.problemDescription }}</p>
+              <FileGallery :files="detail.baseInfo.files" />
             </section>
 
             <section class="card section">
@@ -163,6 +165,12 @@ onMounted(load)
               <div v-for="record in detail.processRecords" :key="record.id" class="aside-item">
                 <small>过程记录 · {{ record.recordTime }}</small>
                 <span>{{ record.content }}</span>
+                <FileGallery :files="record.files" />
+              </div>
+              <div v-for="record in detail.reworkRecords" :key="record.id" class="aside-item">
+                <small>第 {{ record.reworkNo }} 次返工 · {{ record.createTime }}</small>
+                <span>{{ record.reason }}</span>
+                <FileGallery :files="record.files" />
               </div>
               <div v-for="material in detail.materialRecords" :key="material.id" class="aside-item">
                 <small>材料使用 · {{ material.useTime ?? material.createTime }}</small>

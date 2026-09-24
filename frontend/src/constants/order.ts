@@ -53,7 +53,7 @@ export function orderStatusTone(status: number): StatusTone {
 
 /**
  * 工单流转操作类型。数值与后端 `RepairOrderOperationTypeEnum` 一致，
- * 后续阶段随后端扩展补充转派、返工、完成、取消等节点。
+ * 后续阶段随后端扩展补充转派、取消等节点。
  */
 export const ORDER_OPERATION = {
   CREATE: 1,
@@ -62,6 +62,8 @@ export const ORDER_OPERATION = {
   INTERRUPT: 4,
   RESUME: 5,
   SUBMIT_RESULT: 6,
+  STUDENT_CONFIRM: 7,
+  REWORK: 8,
 } as const
 
 export const ORDER_OPERATION_LABEL: Record<number, string> = {
@@ -71,6 +73,8 @@ export const ORDER_OPERATION_LABEL: Record<number, string> = {
   [ORDER_OPERATION.INTERRUPT]: '中断维修',
   [ORDER_OPERATION.RESUME]: '恢复维修',
   [ORDER_OPERATION.SUBMIT_RESULT]: '提交维修结果',
+  [ORDER_OPERATION.STUDENT_CONFIRM]: '确认维修完成',
+  [ORDER_OPERATION.REWORK]: '申请返工',
 }
 
 export function orderOperationLabel(operationType: number): string {

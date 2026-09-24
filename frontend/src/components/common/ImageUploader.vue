@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { OrderFile } from '@/types/file'
 
 const props = withDefaults(defineProps<{
-  /** 已上传的图片地址列表。 */
-  modelValue: string[]
+  /** 已上传的文件列表（fileId + previewUrl）。 */
+  modelValue: OrderFile[]
   /** 最多可上传数量。 */
   max?: number
   /** 上传接口不可用或提交中时禁用选择。 */
@@ -14,9 +15,11 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string[]]
-  /** 用户选择新文件；页面层上传成功后把地址追加到 modelValue。 */
+  'update:modelValue': [value: OrderFile[]]
+  /** 用户选择新文件；页面层上传成功后把结果追加到 modelValue。 */
   'add-files': [files: File[]]
+  /** 用户移除文件；页面层调用删除接口成功后更新 modelValue。 */
+  'remove-file': [file: OrderFile]
 }>()
 
 const input = ref<HTMLInputElement | null>(null)
@@ -37,16 +40,14 @@ function onInputChange(event: Event) {
 
 function onRemove(index: number) {
   if (props.disabled) return
-  const next = [...props.modelValue]
-  next.splice(index, 1)
-  emit('update:modelValue', next)
+  emit('remove-file', props.modelValue[index])
 }
 </script>
 
 <template>
   <div class="image-uploader">
-    <div v-for="(url, index) in modelValue" :key="url" class="thumb">
-      <img :src="url" alt="" />
+    <div v-for="(file, index) in modelValue" :key="file.fileId" class="thumb">
+      <img :src="file.previewUrl" alt="" />
       <button
         class="thumb-remove"
         type="button"

@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createAppRouter } from '@/router'
 import { useAppStore } from '@/stores/app'
 import { workerOrderDetail, submitRepairResult } from '@/api/order'
+import { deleteFile, uploadFile } from '@/api/file'
 import { enabledAreaTree } from '@/api/area'
 import { listEnabledFaultTypes } from '@/api/faultType'
 import type { OrderDetail } from '@/types/order'
@@ -13,6 +14,11 @@ import WorkerCompleteView from './WorkerCompleteView.vue'
 vi.mock('@/api/order', () => ({
   workerOrderDetail: vi.fn(),
   submitRepairResult: vi.fn(),
+}))
+
+vi.mock('@/api/file', () => ({
+  uploadFile: vi.fn(),
+  deleteFile: vi.fn(),
 }))
 
 vi.mock('@/api/area', () => ({
@@ -25,6 +31,8 @@ vi.mock('@/api/faultType', () => ({
 
 const mockedDetail = vi.mocked(workerOrderDetail)
 const mockedSubmit = vi.mocked(submitRepairResult)
+const mockedUpload = vi.mocked(uploadFile)
+const mockedDelete = vi.mocked(deleteFile)
 const mockedTree = vi.mocked(enabledAreaTree)
 const mockedFaultTypes = vi.mocked(listEnabledFaultTypes)
 
@@ -44,6 +52,7 @@ function detail(overrides: Partial<OrderDetail> = {}): OrderDetail {
       faultTypeId: 5,
       problemDescription: '洗手池持续漏水。',
       imageUrls: null,
+      files: [],
       status: 2,
       currentAssigneeId: 11,
       dispatchTime: null,
@@ -85,12 +94,15 @@ describe('提交维修结果页', () => {
   beforeEach(() => {
     mockedDetail.mockReset()
     mockedSubmit.mockReset()
+    mockedUpload.mockReset()
+    mockedDelete.mockReset()
     mockedTree.mockReset()
     mockedFaultTypes.mockReset()
     mockedDetail.mockResolvedValue(detail())
     mockedTree.mockResolvedValue([])
     mockedFaultTypes.mockResolvedValue([{ id: 5, typeCode: 'WATER', typeName: '水暖', status: 1, sortNo: 0, remark: null }])
     mockedSubmit.mockResolvedValue(null)
+    mockedDelete.mockResolvedValue(null)
   })
 
   it('展示提交提示', async () => {
@@ -119,7 +131,7 @@ describe('提交维修结果页', () => {
     await wrapper.find('form').trigger('submit')
     await flushPromises()
 
-    expect(mockedSubmit).toHaveBeenCalledWith(1001, { resultDescription: '更换密封圈并完成通水测试' })
+    expect(mockedSubmit).toHaveBeenCalledWith(1001, { resultDescription: '更换密封圈并完成通水测试', fileIds: [] })
     await vi.waitFor(() => {
       expect(router.currentRoute.value.name).toBe('worker-order-detail')
     })
