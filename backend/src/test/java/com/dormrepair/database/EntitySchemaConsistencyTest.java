@@ -31,6 +31,8 @@ class EntitySchemaConsistencyTest {
         Map.entry("repair_holiday_calendar", "RepairHolidayCalendar"),
         Map.entry("repair_dispatch_alert", "RepairDispatchAlert"),
         Map.entry("repair_order_alert", "RepairOrderAlert"),
+        Map.entry("sys_file", "SysFile"), Map.entry("repair_order_file", "RepairOrderFile"),
+        Map.entry("repair_process_file", "RepairProcessFile"), Map.entry("repair_rework_file", "RepairReworkFile"),
         Map.entry("sys_idempotent_record", "SysIdempotentRecord"),
         Map.entry("sys_operation_log", "SysOperationLog")
     );

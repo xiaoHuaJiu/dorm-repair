@@ -7,7 +7,8 @@ $formalTables = @(
     'repair_worker_area_scope','repair_work_schedule','repair_order','repair_process_record',
     'repair_material_usage','repair_transfer_request','repair_leave_request','repair_rework_record',
     'repair_evaluation','repair_order_flow','repair_reminder_record','repair_holiday_calendar',
-    'repair_dispatch_alert','repair_order_alert','sys_idempotent_record','sys_operation_log'
+    'repair_dispatch_alert','repair_order_alert','sys_idempotent_record','sys_operation_log',
+    'sys_file','repair_order_file','repair_process_file','repair_rework_file'
 )
 $requiredIndexes = @(
     'idx_order_duplicate_check','idx_order_assignee_status','idx_order_status_report',
@@ -20,7 +21,11 @@ $requiredIndexes = @(
     'idx_rework_order_time','idx_rework_admin','idx_flow_order_time',
     'uk_evaluation_order','uk_reminder_deduplicate','uk_idempotent_biz_user_no',
     'uk_holiday_date','idx_holiday_year','uk_dispatch_alert_open','idx_dispatch_alert_status_time',
-    'uk_order_alert_rework_type','idx_order_alert_status_time'
+    'uk_order_alert_rework_type','idx_order_alert_status_time',
+    'uk_bucket_object','idx_create_by_time','idx_file_biz_type','idx_file_status_deleted',
+    'uk_order_file','idx_order_file_order','idx_order_file_file',
+    'uk_process_file','idx_process_file_process','idx_process_file_file',
+    'uk_rework_file','idx_rework_file_rework','idx_rework_file_file'
 )
 
 function Invoke-DatabaseScalar([string]$Sql) {
@@ -45,4 +50,4 @@ $actualIndexes = Invoke-DatabaseScalar "SELECT DISTINCT index_name FROM informat
 $missingIndexes = @($requiredIndexes | Where-Object { $_ -notin $actualIndexes })
 if ($missingIndexes.Count -gt 0) { throw "缺少关键索引：$($missingIndexes -join ', ')" }
 
-Write-Output "数据库结构验证通过：正式表 $($actualTables.Count)/21，关键索引 $($actualIndexes.Count)/$($requiredIndexes.Count)，外键 0。"
+Write-Output "数据库结构验证通过：正式表 $($actualTables.Count)/25，关键索引 $($actualIndexes.Count)/$($requiredIndexes.Count)，外键 0。"

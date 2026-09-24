@@ -21,7 +21,7 @@ class Plan7MySqlIntegrationTest {
   @AfterEach void clear(){SecurityContextHolder.clearContext();}
 
   @Test void secondReworkWarnsWithoutMarkingException(){
-    Fixture f=fixture(3,1); login(f.student()); service.rework(f.order(),new CreateReworkRequest("仍未修好",List.of("repair/test/rework.jpg")));
+    Fixture f=fixture(3,1); login(f.student()); service.rework(f.order(),new CreateReworkRequest("仍未修好",null));
     assertThat(jdbc.queryForMap("SELECT status,rework_count,exception_flag FROM repair_order WHERE id=?",f.order())).containsEntry("status",4).containsEntry("rework_count",2).containsEntry("exception_flag",0);
     assertThat(jdbc.queryForMap("SELECT alert_type,alert_level FROM repair_order_alert WHERE order_id=?",f.order())).containsEntry("alert_type","REWORK_WARNING").containsEntry("alert_level",2);
   }

@@ -34,6 +34,11 @@ public enum ResultCodeEnum {
     ORDER_IDEMPOTENT_PROCESSING(17003, "报修正在提交中，请勿重复操作"),
     ORDER_BIZ_NO_CONFLICT(17004, "当前提交标识已被使用，请刷新页面后重新提交"),
     ORDER_EVALUATION_EXISTS(17005, "该工单已评价，请勿重复评价"),
+    FILE_EMPTY(18001,"上传文件不能为空"), FILE_BIZ_TYPE_INVALID(18002,"文件业务类型不合法"),
+    FILE_TYPE_NOT_ALLOWED(18003,"文件格式不允许"), FILE_TOO_LARGE(18004,"文件大小超过限制"),
+    FILE_NOT_FOUND(18005,"文件不存在"), FILE_NOT_OWNER(18006,"无权操作该文件"),
+    FILE_ALREADY_BOUND(18007,"文件已经绑定业务"), FILE_UPLOAD_FAILED(18008,"文件上传失败"),
+    FILE_DELETE_FAILED(18009,"文件删除失败"),
     SYSTEM_ERROR(50000, "系统异常，请稍后重试");
 
     private final int code;

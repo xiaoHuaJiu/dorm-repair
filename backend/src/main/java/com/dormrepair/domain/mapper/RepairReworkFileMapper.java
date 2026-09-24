@@ -1,0 +1,2 @@
+package com.dormrepair.domain.mapper; import com.dormrepair.domain.entity.RepairReworkFile; import org.apache.ibatis.annotations.*; import java.util.List;
+@Mapper public interface RepairReworkFileMapper {RepairReworkFile selectById(@Param("id")Long id);int insert(RepairReworkFile row);int existsByFileId(@Param("fileId")Long fileId);List<RepairReworkFile> selectByReworkId(@Param("reworkId")Long reworkId);}

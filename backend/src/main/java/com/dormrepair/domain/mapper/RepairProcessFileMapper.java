@@ -1,0 +1,2 @@
+package com.dormrepair.domain.mapper; import com.dormrepair.domain.entity.RepairProcessFile; import org.apache.ibatis.annotations.*; import java.util.List;
+@Mapper public interface RepairProcessFileMapper {RepairProcessFile selectById(@Param("id")Long id);int insert(RepairProcessFile row);int existsByFileId(@Param("fileId")Long fileId);List<RepairProcessFile> selectByProcessId(@Param("processId")Long processId);}

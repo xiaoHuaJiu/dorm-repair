@@ -25,7 +25,8 @@ $requiredVariables = @(
     'MYSQL_PASSWORD',
     'REDIS_PASSWORD',
     'MINIO_ROOT_USER',
-    'MINIO_ROOT_PASSWORD'
+    'MINIO_ROOT_PASSWORD',
+    'MINIO_BUCKET_NAME',
     'JWT_SECRET'
 )
 
@@ -46,6 +47,7 @@ $env:REDIS_PASSWORD = $values['REDIS_PASSWORD']
 $env:MINIO_ENDPOINT = 'http://localhost:9000'
 $env:MINIO_ACCESS_KEY = $values['MINIO_ROOT_USER']
 $env:MINIO_SECRET_KEY = $values['MINIO_ROOT_PASSWORD']
+$env:MINIO_BUCKET_NAME = $values['MINIO_BUCKET_NAME']
 $env:JWT_SECRET = $values['JWT_SECRET']
 $env:JWT_TTL = if ($values['JWT_TTL']) { $values['JWT_TTL'] } else { '8h' }
 $env:DEV_SEED_ENABLED = if ($values['DEV_SEED_ENABLED']) { $values['DEV_SEED_ENABLED'] } else { 'false' }

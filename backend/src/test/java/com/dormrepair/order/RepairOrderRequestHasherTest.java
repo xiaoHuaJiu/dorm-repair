@@ -11,5 +11,5 @@ class RepairOrderRequestHasherTest {
         assertThat(hasher.hash(9L,r)).isEqualTo(first);
         r.setRoomId(99L); assertThat(hasher.hash(9L,r)).isNotEqualTo(first);
     }
-    private CreateRepairOrderRequest request(){var r=new CreateRepairOrderRequest();r.setBizNo("b");r.setCampusId(1L);r.setAreaId(2L);r.setBuildingId(3L);r.setRoomId(4L);r.setFaultTypeId(5L);r.setProblemDescription("灯坏了");r.setContactName("张三");r.setContactPhone("13800000000");r.setImageUrls(List.of("a","b"));return r;}
+    private CreateRepairOrderRequest request(){var r=new CreateRepairOrderRequest();r.setBizNo("b");r.setCampusId(1L);r.setAreaId(2L);r.setBuildingId(3L);r.setRoomId(4L);r.setFaultTypeId(5L);r.setProblemDescription("灯坏了");r.setContactName("张三");r.setContactPhone("13800000000");r.setFileIds(List.of(2L,1L));return r;}
 }

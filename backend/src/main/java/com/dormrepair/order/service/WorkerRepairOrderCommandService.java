@@ -7,8 +7,7 @@ import com.dormrepair.domain.mapper.*;
 import com.dormrepair.order.dto.*;
 import com.dormrepair.security.context.UserContext;
 import com.dormrepair.security.model.LoginUser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.dormrepair.file.service.FileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,14 +23,14 @@ public class WorkerRepairOrderCommandService {
     private final RepairOrderFlowMapper flows;
     private final SysOperationLogMapper logs;
     private final CurrentWorkerResolver workerResolver;
-    private final ObjectMapper objectMapper;
     private final RepairReworkRecordMapper reworks;
+    private final FileService fileService;
 
     public WorkerRepairOrderCommandService(RepairOrderMapper orders, RepairProcessRecordMapper processes,
         RepairMaterialUsageMapper materials, RepairOrderFlowMapper flows, SysOperationLogMapper logs,
-        CurrentWorkerResolver workerResolver, ObjectMapper objectMapper, RepairReworkRecordMapper reworks) {
+        CurrentWorkerResolver workerResolver, RepairReworkRecordMapper reworks, FileService fileService) {
         this.orders = orders; this.processes = processes; this.materials = materials; this.flows = flows;
-        this.logs = logs; this.workerResolver = workerResolver; this.objectMapper = objectMapper; this.reworks = reworks;
+        this.logs = logs; this.workerResolver = workerResolver; this.reworks = reworks; this.fileService = fileService;
     }
 
     @Transactional
@@ -51,7 +50,8 @@ public class WorkerRepairOrderCommandService {
     public void addProcess(Long orderId, AddRepairProcessRequest request) {
         Actor actor = actor(); LocalDateTime now = LocalDateTime.now(); RepairOrder order = locked(orderId);
         requireOwner(order, actor.workerId()); requireStatus(order, 2, 4);
-        addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.NORMAL.getCode(), request.content(), request.imageUrls(), null, now);
+        RepairProcessRecord record=addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.NORMAL.getCode(), request.content(), null, now);
+        fileService.bindProcessFiles(record.getId(), request.fileIds(), actor.user().getUserId());
         addLog(actor, orderId, "新增维修过程", "/api/worker/repair-orders/" + orderId + "/process-records", now);
     }
 
@@ -70,7 +70,7 @@ public class WorkerRepairOrderCommandService {
         Actor actor = actor(); LocalDateTime now = LocalDateTime.now(); RepairOrder order = locked(orderId);
         requireOwner(order, actor.workerId()); requireStatus(order, 2);
         if (orders.casInterrupt(orderId, actor.workerId()) != 1) conflict("工单状态已变化，请刷新后重试");
-        addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.INTERRUPT.getCode(), request.content(), null, request.interruptReasonType(), now);
+        addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.INTERRUPT.getCode(), request.content(), request.interruptReasonType(), now);
         addFlow(order, actor, RepairOrderOperationTypeEnum.INTERRUPT, 2, 5, request.content(), now);
         addLog(actor, orderId, "中断维修", "/api/worker/repair-orders/" + orderId + "/interrupt", now);
     }
@@ -81,7 +81,7 @@ public class WorkerRepairOrderCommandService {
         requireOwner(order, actor.workerId()); requireStatus(order, 5);
         if (orders.casResume(orderId, actor.workerId()) != 1) conflict("工单状态已变化，请刷新后重试");
         String content = request == null || request.remark() == null || request.remark().isBlank() ? "恢复维修" : request.remark();
-        addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.RESUME.getCode(), content, null, null, now);
+        addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.RESUME.getCode(), content, null, now);
         addFlow(order, actor, RepairOrderOperationTypeEnum.RESUME, 5, 2, content, now);
         addLog(actor, orderId, "恢复维修", "/api/worker/repair-orders/" + orderId + "/resume", now);
     }
@@ -92,7 +92,8 @@ public class WorkerRepairOrderCommandService {
         requireOwner(order, actor.workerId()); requireStatus(order, 2, 4);
         if (orders.casSubmitResult(orderId, actor.workerId(), now) != 1) conflict("工单状态已变化，请刷新后重试");
         if (Integer.valueOf(4).equals(order.getStatus()) && reworks.completeCurrent(orderId, order.getReworkCount(), now) != 1) conflict("当前返工记录不存在或已完成");
-        addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.SUBMIT_RESULT.getCode(), request.resultDescription(), request.resultImageUrls(), null, now);
+        RepairProcessRecord record=addProcessEntity(orderId, actor.workerId(), ProcessRecordTypeEnum.SUBMIT_RESULT.getCode(), request.resultDescription(), null, now);
+        fileService.bindProcessFiles(record.getId(), request.fileIds(), actor.user().getUserId());
         addFlow(order, actor, RepairOrderOperationTypeEnum.SUBMIT_RESULT, order.getStatus(), 3, request.resultDescription(), now);
         addLog(actor, orderId, "提交维修结果", "/api/worker/repair-orders/" + orderId + "/submit-result", now);
     }
@@ -103,11 +104,10 @@ public class WorkerRepairOrderCommandService {
     private void requireStatus(RepairOrder order, int... allowed) { for (int status : allowed) if (Integer.valueOf(status).equals(order.getStatus())) return; conflict("当前工单状态不允许执行该操作"); }
     private void conflict(String message) { throw new BusinessException(ResultCodeEnum.DATA_CONFLICT, message); }
 
-    private void addProcessEntity(Long orderId, Long workerId, int type, String content, List<String> images, Integer reason, LocalDateTime now) {
+    private RepairProcessRecord addProcessEntity(Long orderId, Long workerId, int type, String content, Integer reason, LocalDateTime now) {
         RepairProcessRecord record = new RepairProcessRecord(); record.setOrderId(orderId); record.setWorkerId(workerId); record.setRecordType(type);
-        record.setContent(content); record.setImageUrls(toJson(images)); record.setInterruptReasonType(reason); record.setRecordTime(now); record.setDeleted(0); processes.insert(record);
+        record.setContent(content); record.setImageUrls(null); record.setInterruptReasonType(reason); record.setRecordTime(now); record.setDeleted(0); processes.insert(record); return record;
     }
-    private String toJson(List<String> values) { if (values == null || values.isEmpty()) return null; try { return objectMapper.writeValueAsString(values); } catch (JsonProcessingException e) { throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "图片地址格式错误"); } }
     private void addFlow(RepairOrder order, Actor actor, RepairOrderOperationTypeEnum type, int from, int to, String reason, LocalDateTime now) {
         RepairOrderFlow flow = new RepairOrderFlow(); flow.setOrderId(order.getId()); flow.setOperationType(type.getCode()); flow.setFromStatus(from); flow.setToStatus(to);
         flow.setOriginalAssigneeId(actor.workerId()); flow.setNewAssigneeId(actor.workerId()); flow.setOperatorId(actor.user().getUserId()); flow.setOperatorRole(WORKER_ROLE);

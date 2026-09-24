@@ -1,0 +1,2 @@
+package com.dormrepair.domain.mapper; import com.dormrepair.domain.entity.SysFile; import org.apache.ibatis.annotations.*; import java.time.LocalDateTime; import java.util.List;
+@Mapper public interface SysFileMapper {SysFile selectById(@Param("id")Long id);SysFile selectByIdForUpdate(@Param("id")Long id);int insert(SysFile file);int markDeleted(@Param("id")Long id);List<Long> selectExpiredCandidateIds(@Param("before")LocalDateTime before,@Param("limit")int limit);}

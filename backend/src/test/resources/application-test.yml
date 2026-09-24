@@ -20,6 +20,10 @@ app:
     endpoint: http://localhost:9000
     access-key: test-access-key
     secret-key: test-secret-key
+    bucket-name: dorm-repair-test
+    auto-create-bucket: false
+  file-upload:
+    cleanup-enabled: false
 
 pagehelper:
   helper-dialect: h2

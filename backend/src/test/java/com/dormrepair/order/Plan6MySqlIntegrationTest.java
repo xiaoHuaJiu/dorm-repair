@@ -37,11 +37,11 @@ class Plan6MySqlIntegrationTest {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(login,null,List.of()));
 
         service.accept(order,new AcceptRepairOrderRequest(null));
-        service.addProcess(order,new AddRepairProcessRequest("现场检查完成",List.of("repair/test/process.jpg")));
+        service.addProcess(order,new AddRepairProcessRequest("现场检查完成",null));
         service.addMaterial(order,new AddMaterialUsageRequest("灯泡","20W",new BigDecimal("1.00"),"个","更换损坏灯泡"));
         service.interrupt(order,new InterruptRepairRequest(1,"等待备用材料"));
         service.resume(order,new ResumeRepairRequest("材料到位，恢复维修"));
-        service.submitResult(order,new SubmitRepairResultRequest("已修复并通电测试",List.of("repair/test/result.jpg")));
+        service.submitResult(order,new SubmitRepairResultRequest("已修复并通电测试",null));
 
         assertThat(jdbc.queryForObject("SELECT status FROM repair_order WHERE id=?",Integer.class,order)).isEqualTo(3);
         assertThat(jdbc.queryForObject("SELECT TIMESTAMPDIFF(HOUR,accept_time,complete_deadline) FROM repair_order WHERE id=?",Integer.class,order)).isEqualTo(24);

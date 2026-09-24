@@ -6,6 +6,7 @@
 !frontend/.env.test
 .docker-data/
 .runtime/
+.run/
 .logs/
 .superpowers/
 .m2/

@@ -6,6 +6,7 @@ import com.dormrepair.domain.entity.RepairOrder;
 import com.dormrepair.domain.mapper.*;
 import com.dormrepair.order.service.RepairOrderAccessService;
 import com.dormrepair.order.service.RepairOrderDetailService;
+import com.dormrepair.file.service.FileService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +20,7 @@ class RepairOrderDetailServiceTest {
         RepairOrderAccessService access=mock(RepairOrderAccessService.class); doThrow(new BusinessException(ResultCodeEnum.ORDER_ACCESS_DENIED)).when(access).checkViewPermission(order);
         RepairProcessRecordMapper processes=mock(RepairProcessRecordMapper.class); RepairMaterialUsageMapper materials=mock(RepairMaterialUsageMapper.class);
         RepairReworkRecordMapper reworks=mock(RepairReworkRecordMapper.class); RepairEvaluationMapper evaluations=mock(RepairEvaluationMapper.class); RepairOrderFlowMapper flows=mock(RepairOrderFlowMapper.class);
-        RepairOrderDetailService service=new RepairOrderDetailService(orders,access,processes,materials,reworks,evaluations,flows);
+        FileService fileService=mock(FileService.class); RepairOrderDetailService service=new RepairOrderDetailService(orders,access,processes,materials,reworks,evaluations,flows,fileService);
         assertThatThrownBy(()->service.getDetail(1L)).isInstanceOf(BusinessException.class);
         verifyNoInteractions(processes,materials,reworks,evaluations,flows);
     }
@@ -31,7 +32,7 @@ class RepairOrderDetailServiceTest {
         RepairEvaluationMapper evaluations=mock(RepairEvaluationMapper.class); RepairOrderFlowMapper flows=mock(RepairOrderFlowMapper.class);
         when(processes.selectByOrderId(1L)).thenReturn(List.of()); when(materials.selectByOrderId(1L)).thenReturn(List.of());
         when(reworks.selectByOrderId(1L)).thenReturn(List.of()); when(flows.selectByOrderId(1L)).thenReturn(List.of());
-        var detail=new RepairOrderDetailService(orders,access,processes,materials,reworks,evaluations,flows).getDetail(1L);
+        FileService fileService=mock(FileService.class); when(fileService.listOrderFiles(1L)).thenReturn(List.of()); var detail=new RepairOrderDetailService(orders,access,processes,materials,reworks,evaluations,flows,fileService).getDetail(1L);
         assertThat(detail.getProcessRecords()).isEmpty(); assertThat(detail.getMaterialRecords()).isEmpty();
         assertThat(detail.getReworkRecords()).isEmpty(); assertThat(detail.getFlows()).isEmpty(); assertThat(detail.getEvaluation()).isNull();
     }
@@ -42,7 +43,7 @@ class RepairOrderDetailServiceTest {
         RepairProcessRecordMapper processes=mock(RepairProcessRecordMapper.class); RepairMaterialUsageMapper materials=mock(RepairMaterialUsageMapper.class);
         RepairReworkRecordMapper reworks=mock(RepairReworkRecordMapper.class); RepairEvaluationMapper evaluations=mock(RepairEvaluationMapper.class); RepairOrderFlowMapper flows=mock(RepairOrderFlowMapper.class);
         when(processes.selectByOrderId(1L)).thenReturn(List.of()); when(reworks.selectByOrderId(1L)).thenReturn(List.of()); when(flows.selectByOrderId(1L)).thenReturn(List.of());
-        var detail=new RepairOrderDetailService(orders,access,processes,materials,reworks,evaluations,flows).getDetail(1L);
+        FileService fileService=mock(FileService.class); when(fileService.listOrderFiles(1L)).thenReturn(List.of()); var detail=new RepairOrderDetailService(orders,access,processes,materials,reworks,evaluations,flows,fileService).getDetail(1L);
         assertThat(detail.getMaterialRecords()).isEmpty(); verifyNoInteractions(materials);
     }
 }

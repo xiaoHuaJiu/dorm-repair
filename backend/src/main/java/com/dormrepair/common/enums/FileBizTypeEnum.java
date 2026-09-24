@@ -1,0 +1,3 @@
+package com.dormrepair.common.enums;
+import com.dormrepair.common.exception.BusinessException;
+public enum FileBizTypeEnum {REPAIR("repair",UserRoleEnum.STUDENT),PROCESS("process",UserRoleEnum.WORKER),REWORK("rework",UserRoleEnum.STUDENT);private final String path;private final UserRoleEnum role;FileBizTypeEnum(String path,UserRoleEnum role){this.path=path;this.role=role;}public String getPath(){return path;}public boolean allows(UserRoleEnum value){return role==value;}public static FileBizTypeEnum fromCode(String code){try{return valueOf(code.trim().toUpperCase());}catch(Exception e){throw new BusinessException(ResultCodeEnum.FILE_BIZ_TYPE_INVALID);}}}
