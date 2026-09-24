@@ -186,6 +186,61 @@ describe('区域配置页', () => {
     )
   })
 
+  it('展开状态下新增下级，刷新后树保持展开且父节点自动展开', async () => {
+    mockedCreate.mockResolvedValue({ id: 9 })
+    const { wrapper } = mountView()
+    await flushPromises()
+    await enterEditing(wrapper)
+
+    // 模拟用户点击 summary 展开“东校区”：设置 open 后触发 toggle 同步到受控状态。
+    const rootDetails = wrapper.find('details.region-branch')
+    ;(rootDetails.element as HTMLDetailsElement).open = true
+    await rootDetails.trigger('toggle')
+    expect(rootDetails.attributes('open')).toBeDefined()
+
+    // 在“宿舍区”下新增下级（第 2 个 + 按钮）。
+    await wrapper.findAll('.region-icon.add')[1].trigger('click')
+    await wrapper.find('#region-name').setValue('2 号楼')
+    await wrapper.find('#region-code').setValue('B02')
+    await wrapper.find('#region-sort').setValue('1')
+    await wrapper.find('.modal .btn.primary').trigger('click')
+    await flushPromises()
+
+    expect(mockedCreate).toHaveBeenCalledWith(expect.objectContaining({ parentId: 2 }))
+    // 刷新重挂载后：“东校区”保持用户展开状态，“宿舍区”（新增父节点）自动展开。
+    const details = wrapper.findAll('details.region-branch')
+    expect(details[0].attributes('open')).toBeDefined()
+    expect(details[1].attributes('open')).toBeDefined()
+  })
+
+  it('手动收起的分支在新增刷新后保持收起', async () => {
+    mockedCreate.mockResolvedValue({ id: 9 })
+    const { wrapper } = mountView()
+    await flushPromises()
+    await enterEditing(wrapper)
+
+    // 展开“宿舍区”后再收起，验证收起状态同样受控。
+    const branchDetails = wrapper.findAll('details.region-branch')[1]
+    ;(branchDetails.element as HTMLDetailsElement).open = true
+    await branchDetails.trigger('toggle')
+    ;(branchDetails.element as HTMLDetailsElement).open = false
+    await branchDetails.trigger('toggle')
+
+    // 在“东校区”下新增下级。
+    await wrapper.find('.region-icon.add').trigger('click')
+    await wrapper.find('#region-name').setValue('新区域')
+    await wrapper.find('#region-code').setValue('A02')
+    await wrapper.find('#region-sort').setValue('3')
+    await wrapper.find('.modal .btn.primary').trigger('click')
+    await flushPromises()
+
+    expect(mockedCreate).toHaveBeenCalledWith(expect.objectContaining({ parentId: 1 }))
+    // “东校区”为新增父节点被强制展开；手动收起的“宿舍区”保持收起。
+    const details = wrapper.findAll('details.region-branch')
+    expect(details[0].attributes('open')).toBeDefined()
+    expect(details[1].attributes('open')).toBeUndefined()
+  })
+
   it('删除有下级节点时提示先删除下级', async () => {
     const { wrapper } = mountView()
     await flushPromises()

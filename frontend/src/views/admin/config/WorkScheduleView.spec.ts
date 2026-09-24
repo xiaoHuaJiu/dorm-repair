@@ -144,6 +144,31 @@ describe('工作时间配置页', () => {
     expect(wrapper.find('.modal .error').text()).toBe('下班时间必须晚于上班时间')
   })
 
+  it('新增弹窗日期输入框提示“年/月/日”', async () => {
+    const { wrapper } = mountView()
+    await flushPromises()
+    await wrapper.find('.page-head .btn.primary').trigger('click')
+    expect(wrapper.find('#schedule-start-date').attributes('placeholder')).toBe('年/月/日')
+    expect(wrapper.find('#schedule-end-date').attributes('placeholder')).toBe('年/月/日')
+  })
+
+  it('新增弹窗校验：日期格式不合法时提示', async () => {
+    const { wrapper } = mountView()
+    await flushPromises()
+    await wrapper.find('.page-head .btn.primary').trigger('click')
+
+    await wrapper.find('#schedule-name').setValue('测试方案')
+    await wrapper.find('#schedule-start-date').setValue('abc')
+    await wrapper.find('#schedule-end-date').setValue('2026/9/30')
+    await wrapper.find('#schedule-start-time').setValue('08:00')
+    await wrapper.find('#schedule-end-time').setValue('18:00')
+    await wrapper.find('.modal .btn.primary').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.modal .error').text()).toBe('开始日期格式应为“年/月/日”，例如 2026/9/24')
+    expect(mockedCreate).not.toHaveBeenCalled()
+  })
+
   it('新增成功提交 status=1 并刷新列表', async () => {
     mockedCreate.mockResolvedValue({ id: 3 })
     const { wrapper } = mountView()
@@ -151,8 +176,8 @@ describe('工作时间配置页', () => {
     await wrapper.find('.page-head .btn.primary').trigger('click')
 
     await wrapper.find('#schedule-name').setValue('寒假方案')
-    await wrapper.find('#schedule-start-date').setValue('2027-01-15')
-    await wrapper.find('#schedule-end-date').setValue('2027-02-20')
+    await wrapper.find('#schedule-start-date').setValue('2027/1/15')
+    await wrapper.find('#schedule-end-date').setValue('2027/2/20')
     await wrapper.find('#schedule-start-time').setValue('09:00')
     await wrapper.find('#schedule-end-time').setValue('17:00')
     await wrapper.find('.modal .btn.primary').trigger('click')

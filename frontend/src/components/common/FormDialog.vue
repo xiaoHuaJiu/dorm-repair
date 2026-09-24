@@ -31,6 +31,12 @@ function close() {
   if (!props.loading) emit('update:visible', false)
 }
 
+/** 取消按钮：既通知父组件，也负责关闭弹窗。 */
+function cancel() {
+  emit('cancel')
+  close()
+}
+
 function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && props.visible) close()
 }
@@ -54,7 +60,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
       <slot />
       <div v-if="error" class="error" role="alert">{{ error }}</div>
       <div class="inline-actions modal-actions">
-        <button class="btn" type="button" :disabled="loading" @click="emit('cancel')">{{ cancelText }}</button>
+        <button class="btn" type="button" :disabled="loading" @click="cancel">{{ cancelText }}</button>
         <button class="btn primary" type="button" :disabled="loading" @click="emit('submit')">
           {{ loading ? '提交中…' : confirmText }}
         </button>

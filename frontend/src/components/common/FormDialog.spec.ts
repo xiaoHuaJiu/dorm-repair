@@ -24,6 +24,13 @@ describe('表单弹窗', () => {
     expect(wrapper.emitted('submit')).toBeTruthy()
   })
 
+  it('取消按钮同时请求关闭弹窗', async () => {
+    const wrapper = mount(FormDialog, { props: { visible: true, title: '编辑区域' } })
+    await wrapper.findAll('button')[0].trigger('click')
+    expect(wrapper.emitted('cancel')).toBeTruthy()
+    expect(wrapper.emitted('update:visible')?.[0]).toEqual([false])
+  })
+
   it('展示表单错误信息', () => {
     const wrapper = mount(FormDialog, {
       props: { visible: true, title: '新增维修人员', error: '用户名已存在' },

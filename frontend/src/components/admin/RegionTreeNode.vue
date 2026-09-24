@@ -11,6 +11,8 @@ const props = defineProps<{
   node: AreaTreeNode
   /** 编辑态显示增删操作按钮。 */
   editing: boolean
+  /** 共享的展开节点 id 集合；details 的 open 状态受控于此，树刷新重挂载后仍保持展开。 */
+  expandedIds: Set<number>
 }>()
 
 const emit = defineEmits<{
@@ -19,6 +21,14 @@ const emit = defineEmits<{
   /** 点击“−”，请求删除当前节点。 */
   remove: [node: AreaTreeNode]
 }>()
+
+/** 同步 details 的展开状态到共享集合，保证用户收起/展开不被后续渲染回退。 */
+function onToggle(event: Event) {
+  // 用 currentTarget 而非 target：冒泡的 toggle 到达本节点时，只同步本节点自身状态。
+  const el = event.currentTarget as HTMLDetailsElement
+  if (el.open) props.expandedIds.add(props.node.id)
+  else props.expandedIds.delete(props.node.id)
+}
 
 const childType = computed(() => AREA_CHILD_TYPE[props.node.areaType])
 const isLeaf = computed(() => props.node.areaType === AREA_TYPE.ROOM)
@@ -49,7 +59,7 @@ const removeDisabled = computed(() => !hasChildren.value)
       </span>
     </div>
 
-    <details v-else class="region-branch">
+    <details v-else class="region-branch" :open="expandedIds.has(node.id)" @toggle="onToggle">
       <summary class="region-node-row">
         <span class="region-node-main">
           <i class="region-chevron" aria-hidden="true"></i>
@@ -86,6 +96,7 @@ const removeDisabled = computed(() => !hasChildren.value)
           :key="child.id"
           :node="child"
           :editing="editing"
+          :expanded-ids="expandedIds"
           @add="emit('add', $event)"
           @remove="emit('remove', $event)"
         />

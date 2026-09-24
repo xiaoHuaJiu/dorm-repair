@@ -21,6 +21,8 @@ class Plan2CommonContractTest {
         assertThat(ResultCodeEnum.USERNAME_EXISTS.getCode()).isEqualTo(12001);
         assertThat(ResultCodeEnum.FAULT_CODE_EXISTS.getCode()).isEqualTo(13001);
         assertThat(ResultCodeEnum.AREA_PARENT_INVALID.getCode()).isEqualTo(14001);
+        assertThat(ResultCodeEnum.AREA_CODE_EXISTS.getCode()).isEqualTo(14005);
+        assertThat(new BusinessException(ResultCodeEnum.AREA_CODE_EXISTS).getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(ResultCodeEnum.WORKER_NO_EXISTS.getCode()).isEqualTo(15001);
         assertThat(ResultCodeEnum.SCHEDULE_CONFLICT.getCode()).isEqualTo(16001);
 

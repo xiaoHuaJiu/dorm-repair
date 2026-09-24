@@ -20,6 +20,7 @@ public enum ResultCodeEnum {
     AREA_NOT_FOUND(14002, "位置节点不存在"),
     AREA_DUPLICATE(14003, "同级位置名称已存在"),
     AREA_UNAVAILABLE(14004, "位置节点不可用"),
+    AREA_CODE_EXISTS(14005, "位置编码已存在"),
     WORKER_NO_EXISTS(15001, "维修人员编号已存在"),
     WORKER_NOT_FOUND(15002, "维修人员不存在"),
     WORKER_USER_EXISTS(15003, "该用户已绑定维修人员"),

@@ -28,6 +28,15 @@ describe('确认弹窗', () => {
     expect(wrapper.emitted('confirm')).toBeTruthy()
   })
 
+  it('取消按钮同时请求关闭弹窗', async () => {
+    const wrapper = mount(ConfirmDialog, {
+      props: { visible: true, title: '确认操作', confirmText: '确认', cancelText: '取消' },
+    })
+    await wrapper.findAll('button')[0].trigger('click')
+    expect(wrapper.emitted('cancel')).toBeTruthy()
+    expect(wrapper.emitted('update:visible')?.[0]).toEqual([false])
+  })
+
   it('危险操作使用 danger 样式', () => {
     const wrapper = mount(ConfirmDialog, { props: { visible: true, title: '停用账号', danger: true } })
     expect(wrapper.findAll('button')[1].classes()).toContain('danger')

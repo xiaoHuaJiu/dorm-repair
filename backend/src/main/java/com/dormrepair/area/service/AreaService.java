@@ -25,7 +25,8 @@ public class AreaService {
         RepairArea value=new RepairArea(); value.setParentId(r.parentId());value.setAreaCode(r.areaCode().trim());
         value.setAreaName(r.areaName().trim());value.setAreaType(r.areaType());value.setSortNo(r.sortNo());
         value.setStatus(1);value.setRemark(r.remark());value.setDeleted(0);
-        try{mapper.insert(value);}catch(DuplicateKeyException ex){throw new BusinessException(ResultCodeEnum.AREA_DUPLICATE);}
+        // 名称重复已在插入前查重拦截；此处唯一键冲突只可能来自 uk_area_code（位置编码全表唯一）。
+        try{mapper.insert(value);}catch(DuplicateKeyException ex){throw new BusinessException(ResultCodeEnum.AREA_CODE_EXISTS);}
         return value.getId();
     }
     @Transactional public void update(Long id,AreaUpdateRequest r){RepairArea v=require(id);

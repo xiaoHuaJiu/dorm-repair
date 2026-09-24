@@ -72,6 +72,22 @@ function onPageChange(next: number) {
   void loadPage()
 }
 
+/**
+ * 将“年/月/日”风格输入解析为后端需要的 yyyy-MM-dd：
+ * 支持 2026/9/24、2026-09-24、2026.9.24、2026年9月24日；无法解析或日期不存在返回 null。
+ */
+function parseDateInput(value: string): string | null {
+  const text = value.trim()
+  const match = /^(\d{4})[年/.\-](\d{1,2})[月/.\-](\d{1,2})日?$/.exec(text)
+  if (!match) return null
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  if (month < 1 || month > 12 || day < 1) return null
+  if (day > new Date(year, month, 0).getDate()) return null
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
 async function toggleStatus(item: WorkScheduleItem) {
   if (togglingIds.value.has(item.id)) return
   togglingIds.value.add(item.id)
@@ -90,8 +106,12 @@ async function submitCreate() {
 
   if (!name) return void (dialogError.value = '方案名称不能为空')
   if (name.length > 100) return void (dialogError.value = '方案名称不能超过 100 个字符')
-  if (!editor.startDate || !editor.endDate) return void (dialogError.value = '请选择开始和结束日期')
-  if (editor.endDate < editor.startDate) return void (dialogError.value = '结束日期不能早于开始日期')
+  if (!editor.startDate || !editor.endDate) return void (dialogError.value = '请输入开始和结束日期')
+  const startDate = parseDateInput(editor.startDate)
+  if (!startDate) return void (dialogError.value = '开始日期格式应为“年/月/日”，例如 2026/9/24')
+  const endDate = parseDateInput(editor.endDate)
+  if (!endDate) return void (dialogError.value = '结束日期格式应为“年/月/日”，例如 2026/9/24')
+  if (endDate < startDate) return void (dialogError.value = '结束日期不能早于开始日期')
   if (!editor.workStartTime || !editor.workEndTime) return void (dialogError.value = '请选择上班和下班时间')
   if (editor.workEndTime <= editor.workStartTime) return void (dialogError.value = '下班时间必须晚于上班时间')
   if (editor.remark.length > 500) return void (dialogError.value = '备注不能超过 500 个字符')
@@ -101,8 +121,8 @@ async function submitCreate() {
   try {
     await createWorkSchedule({
       scheduleName: name,
-      startDate: editor.startDate,
-      endDate: editor.endDate,
+      startDate,
+      endDate,
       workStartTime: editor.workStartTime,
       workEndTime: editor.workEndTime,
       status: COMMON_STATUS.ENABLED,
@@ -181,11 +201,13 @@ onMounted(loadPage)
         <div class="grid two">
           <div class="field">
             <label class="required" for="schedule-start-date">开始日期</label>
-            <input id="schedule-start-date" v-model="editor.startDate" class="input" type="date">
+            <input id="schedule-start-date" v-model="editor.startDate" class="input" type="text" inputmode="numeric"
+              placeholder="年/月/日">
           </div>
           <div class="field">
             <label class="required" for="schedule-end-date">结束日期</label>
-            <input id="schedule-end-date" v-model="editor.endDate" class="input" type="date">
+            <input id="schedule-end-date" v-model="editor.endDate" class="input" type="text" inputmode="numeric"
+              placeholder="年/月/日">
           </div>
           <div class="field">
             <label class="required" for="schedule-start-time">上班时间</label>

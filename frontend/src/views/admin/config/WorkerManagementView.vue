@@ -418,11 +418,11 @@ onMounted(() => {
         <template v-else>
           <div v-if="!editor.editing" class="field">
             <label class="required" for="worker-username">用户名</label>
-            <input id="worker-username" v-model="editor.username" class="input" maxlength="100">
+            <input id="worker-username" v-model="editor.username" class="input" maxlength="100" autocomplete="off">
           </div>
           <div v-if="!editor.editing" class="field">
             <label class="required" for="worker-password">密码（8 到 64 个字符）</label>
-            <input id="worker-password" v-model="editor.password" class="input" type="password" minlength="8" maxlength="64">
+            <input id="worker-password" v-model="editor.password" class="input" type="password" minlength="8" maxlength="64" autocomplete="new-password">
           </div>
           <div class="field">
             <label :class="{ required: !editor.editing }" for="worker-real-name">姓名</label>

@@ -14,6 +14,9 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const tree = ref<AreaTreeNode[]>([])
 
+/** 已展开节点 id 集合；树刷新重挂载后据此恢复展开状态，避免新增后整树收拢。 */
+const expandedIds = reactive(new Set<number>())
+
 /** 浏览态隐藏增删按钮，点击“编辑”进入维护态。 */
 const editing = ref(false)
 
@@ -98,6 +101,8 @@ async function submitAdd() {
     })
     addDialog.visible = false
     notifySuccess(parent ? `已添加${areaTypeLabel(addDialog.childType)}节点` : '已新增学校/单位')
+    // 刷新前记录父节点展开，保证新节点在刷新后立即可见。
+    if (parent) expandedIds.add(parent.id)
     await loadTree()
   } catch (cause) {
     dialogError.value = cause instanceof Error ? cause.message : '添加失败'
@@ -133,6 +138,7 @@ onMounted(loadTree)
               :key="node.id"
               :node="node"
               :editing="editing"
+              :expanded-ids="expandedIds"
               @add="openAdd"
               @remove="onRemove"
             />
