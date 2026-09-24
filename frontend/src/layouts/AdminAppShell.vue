@@ -14,7 +14,7 @@ export interface AdminNavGroup {
   items: AdminNavItem[]
 }
 
-defineProps<{
+const props = defineProps<{
   title: string
   subtitle?: string
 }>()
@@ -67,6 +67,13 @@ function isActive(to: string): boolean {
   return route.path === to || route.path.startsWith(`${to}/`)
 }
 
+/** 面包屑：当前路由所属导航组 + 页面标题，相邻重复时只保留一个。 */
+const breadcrumbs = computed(() => {
+  const group = NAV_GROUPS.find((item) => item.items.some((link) => isActive(link.to)))
+  const parts = [group?.label, props.title].filter((part): part is string => Boolean(part))
+  return parts.filter((part, index) => index === 0 || part !== parts[index - 1])
+})
+
 function logout() {
   app.clearLoginState()
   void router.push({ name: 'login' })
@@ -108,6 +115,12 @@ function logout() {
       </aside>
 
       <main class="admin-main">
+        <nav v-if="breadcrumbs.length" class="breadcrumb" aria-label="面包屑">
+          <template v-for="(crumb, index) in breadcrumbs" :key="crumb">
+            <span v-if="index > 0" class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span :class="{ 'breadcrumb-current': index === breadcrumbs.length - 1 }">{{ crumb }}</span>
+          </template>
+        </nav>
         <div class="page-head">
           <div>
             <h1>{{ title }}</h1>

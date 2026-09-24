@@ -58,6 +58,10 @@ function logout() {
       </a>
       <div class="top-actions">
         <slot name="before-actions" />
+        <!-- 维修端所有页面展示消息入口（与原型一致）；未读数量依赖消息接口。 -->
+        <RouterLink v-if="role === 2" class="message-link" to="/worker/messages" aria-label="消息中心">
+          <span aria-hidden="true">✉</span>
+        </RouterLink>
         <span class="avatar" aria-hidden="true">{{ app.currentUser?.realName?.slice(0, 1) || '用' }}</span>
         <span class="user-copy">
           <strong>{{ app.currentUser?.realName || '访客' }}</strong>· {{ roleLabelOf(role) }}

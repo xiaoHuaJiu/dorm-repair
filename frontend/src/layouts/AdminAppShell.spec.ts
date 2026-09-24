@@ -39,15 +39,18 @@ describe('管理端布局壳', () => {
   it('侧栏展示已注册路由的分组，未注册路由自动隐藏', async () => {
     const { wrapper } = await buildShell()
     const sections = wrapper.findAll('.nav-section')
-    // F4 已注册基础维护路由；工单管理路由尚未注册，整组隐藏。
-    expect(sections).toHaveLength(2)
+    // F4 已注册基础维护路由；F8 已注册工单管理路由，三组全部展示。
+    expect(sections).toHaveLength(3)
     expect(sections[0].text()).toContain('工作台')
     expect(sections[1].text()).toContain('维修人员')
     expect(sections[1].text()).toContain('区域配置')
     expect(sections[1].text()).toContain('工作时间配置')
     expect(sections[1].text()).toContain('故障类型管理')
-    expect(wrapper.text()).not.toContain('全部工单')
-    expect(wrapper.text()).not.toContain('异常工单')
+    expect(sections[2].text()).toContain('全部工单')
+    expect(sections[2].text()).toContain('异常工单')
+    expect(sections[2].text()).toContain('转派审批')
+    expect(sections[2].text()).toContain('待人工派单')
+    expect(sections[2].text()).toContain('请假审批')
   })
 
   it('当前路由对应导航项高亮', async () => {
@@ -55,6 +58,15 @@ describe('管理端布局壳', () => {
     const active = wrapper.find('.nav-link.active')
     expect(active.exists()).toBe(true)
     expect(active.text()).toBe('工作台')
+  })
+
+  it('面包屑展示所属导航组与页面标题', async () => {
+    const { wrapper } = await buildShell()
+    const crumb = wrapper.find('.breadcrumb')
+    expect(crumb.exists()).toBe(true)
+    // 工作台页所在组名与页面标题相同，去重后只显示一个。
+    expect(crumb.text()).toContain('工作台')
+    expect(crumb.find('.breadcrumb-sep').exists()).toBe(false)
   })
 
   it('退出登录清理状态并跳转登录页', async () => {

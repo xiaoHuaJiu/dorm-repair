@@ -42,12 +42,16 @@ describe('移动端布局壳', () => {
   })
 
   it('底部导航只展示已注册路由', async () => {
-    const { wrapper } = await buildShell()
+    const { wrapper } = await buildShell([
+      ...STUDENT_NAV,
+      { label: '未开放页面', to: '/student/pending' },
+    ])
     const links = wrapper.findAll('.bottom-nav a')
-    expect(links).toHaveLength(1)
+    expect(links).toHaveLength(2)
     expect(links[0].text()).toBe('首页')
     expect(links[0].classes()).toContain('active')
-    expect(wrapper.text()).not.toContain('我的工单')
+    expect(links[1].text()).toBe('我的工单')
+    expect(wrapper.text()).not.toContain('未开放页面')
   })
 
   it('退出登录清理状态并跳转登录页', async () => {
@@ -78,7 +82,23 @@ describe('移动端布局壳', () => {
       global: { plugins: [router] },
     })
     const links = wrapper.findAll('.bottom-nav a')
-    expect(links).toHaveLength(1)
+    expect(links).toHaveLength(3)
     expect(links[0].text()).toBe('工作台')
+    expect(links[1].text()).toBe('我的工单')
+    expect(links[2].text()).toBe('请假')
+  })
+
+  it('维修端顶栏展示消息入口', async () => {
+    const workerNav = [{ label: '工作台', to: '/worker/home' }]
+    setActivePinia(createPinia())
+    useAppStore().setLoginState('jwt-token', { userId: 2, username: 'worker1', realName: '张师傅', roleType: 2 })
+    const router = createAppRouter(createMemoryHistory())
+    await router.push('/worker/home')
+    await router.isReady()
+    const wrapper = mount(MobileAppShell, {
+      props: { role: 2 as const, title: '今日工作台', navItems: workerNav },
+      global: { plugins: [router] },
+    })
+    expect(wrapper.find('a[aria-label="消息中心"]').exists()).toBe(true)
   })
 })
