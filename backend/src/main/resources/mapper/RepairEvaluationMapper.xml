@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairEvaluationMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairEvaluation">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+    <result column="student_uid" property="studentUid" jdbcType="BIGINT"/>
+    <result column="worker_id" property="workerId" jdbcType="BIGINT"/>
+    <result column="score" property="score" jdbcType="TINYINT"/>
+    <result column="content" property="content" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, student_uid, worker_id, score, content, create_time, update_time
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_evaluation
+    WHERE id = #{id}
+  </select>
+  <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_evaluation WHERE order_id=#{orderId} LIMIT 1</select>
+</mapper>

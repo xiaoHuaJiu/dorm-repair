@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairDispatchAlertMapper">
+ <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairDispatchAlert">
+  <id column="id" property="id"/><result column="order_id" property="orderId"/><result column="source_type" property="sourceType"/>
+  <result column="failure_reason" property="failureReason"/><result column="alert_status" property="alertStatus"/>
+  <result column="failure_detail" property="failureDetail"/><result column="occurrence_count" property="occurrenceCount"/>
+  <result column="first_occurred_time" property="firstOccurredTime"/><result column="last_occurred_time" property="lastOccurredTime"/>
+  <result column="handled_by" property="handledBy"/><result column="handled_time" property="handledTime"/>
+  <result column="create_time" property="createTime"/><result column="update_time" property="updateTime"/>
+ </resultMap>
+ <sql id="Base_Column_List">id,order_id,source_type,failure_reason,alert_status,failure_detail,occurrence_count,first_occurred_time,last_occurred_time,handled_by,handled_time,create_time,update_time</sql>
+ <select id="selectById" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_dispatch_alert WHERE id = #{id}</select>
+ <insert id="upsertOpenAlert" useGeneratedKeys="true" keyProperty="id">
+  INSERT INTO repair_dispatch_alert(order_id,source_type,failure_reason,alert_status,failure_detail,occurrence_count,first_occurred_time,last_occurred_time)
+  VALUES(#{orderId},#{sourceType},#{failureReason},0,#{failureDetail},1,#{firstOccurredTime},#{lastOccurredTime})
+  ON DUPLICATE KEY UPDATE failure_detail=VALUES(failure_detail),occurrence_count=occurrence_count+1,last_occurred_time=VALUES(last_occurred_time)
+ </insert>
+</mapper>

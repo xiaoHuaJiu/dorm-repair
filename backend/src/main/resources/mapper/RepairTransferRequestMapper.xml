@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairTransferRequestMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairTransferRequest">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+    <result column="applicant_worker_id" property="applicantWorkerId" jdbcType="BIGINT"/>
+    <result column="original_assignee_id" property="originalAssigneeId" jdbcType="BIGINT"/>
+    <result column="reason_type" property="reasonType" jdbcType="TINYINT"/>
+    <result column="reason_description" property="reasonDescription" jdbcType="VARCHAR"/>
+    <result column="approval_status" property="approvalStatus" jdbcType="TINYINT"/>
+    <result column="review_admin_id" property="reviewAdminId" jdbcType="BIGINT"/>
+    <result column="review_remark" property="reviewRemark" jdbcType="VARCHAR"/>
+    <result column="review_time" property="reviewTime" jdbcType="TIMESTAMP"/>
+    <result column="execute_status" property="executeStatus" jdbcType="TINYINT"/>
+    <result column="new_assignee_id" property="newAssigneeId" jdbcType="BIGINT"/>
+    <result column="execute_time" property="executeTime" jdbcType="TIMESTAMP"/>
+    <result column="failure_reason" property="failureReason" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, applicant_worker_id, original_assignee_id, reason_type, reason_description, approval_status, review_admin_id, review_remark, review_time, execute_status, new_assignee_id, execute_time, failure_reason, create_time, update_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_transfer_request
+    WHERE id = #{id}
+  </select>
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairProcessRecordMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairProcessRecord">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+    <result column="worker_id" property="workerId" jdbcType="BIGINT"/>
+    <result column="record_type" property="recordType" jdbcType="TINYINT"/>
+    <result column="content" property="content" jdbcType="VARCHAR"/>
+    <result column="image_urls" property="imageUrls" jdbcType="VARCHAR"/>
+    <result column="interrupt_reason_type" property="interruptReasonType" jdbcType="TINYINT"/>
+    <result column="record_time" property="recordTime" jdbcType="TIMESTAMP"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, worker_id, record_type, content, image_urls, interrupt_reason_type, record_time, create_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_process_record
+    WHERE id = #{id}
+  </select>
+  <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_process_record WHERE order_id=#{orderId} AND deleted=0 ORDER BY record_time ASC,id ASC</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO repair_process_record(order_id,worker_id,record_type,content,image_urls,interrupt_reason_type,record_time,deleted)
+    VALUES(#{orderId},#{workerId},#{recordType},#{content},#{imageUrls},#{interruptReasonType},#{recordTime},0)
+  </insert>
+</mapper>

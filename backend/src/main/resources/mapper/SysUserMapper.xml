@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.SysUserMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.SysUser">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="username" property="username" jdbcType="VARCHAR"/>
+    <result column="password" property="password" jdbcType="VARCHAR"/>
+    <result column="real_name" property="realName" jdbcType="VARCHAR"/>
+    <result column="phone" property="phone" jdbcType="VARCHAR"/>
+    <result column="role_type" property="roleType" jdbcType="TINYINT"/>
+    <result column="status" property="status" jdbcType="TINYINT"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, username, password, real_name, phone, role_type, status, create_time, update_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM sys_user
+    WHERE id = #{id}
+  </select>
+  <select id="selectByUsername" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM sys_user
+    WHERE username = #{username} AND deleted = 0
+  </select>
+  <insert id="insert" parameterType="com.dormrepair.domain.entity.SysUser"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_user (username, password, real_name, phone, role_type, status, deleted)
+    VALUES (#{username}, #{password}, #{realName}, #{phone}, #{roleType}, #{status}, #{deleted})
+  </insert>
+  <update id="updateStatus">UPDATE sys_user SET status=#{status} WHERE id=#{id} AND deleted=0</update>
+</mapper>

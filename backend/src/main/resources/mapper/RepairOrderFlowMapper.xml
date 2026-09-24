@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairOrderFlowMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairOrderFlow">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+    <result column="operation_type" property="operationType" jdbcType="TINYINT"/>
+    <result column="from_status" property="fromStatus" jdbcType="TINYINT"/>
+    <result column="to_status" property="toStatus" jdbcType="TINYINT"/>
+    <result column="original_assignee_id" property="originalAssigneeId" jdbcType="BIGINT"/>
+    <result column="new_assignee_id" property="newAssigneeId" jdbcType="BIGINT"/>
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT"/>
+    <result column="operator_role" property="operatorRole" jdbcType="TINYINT"/>
+    <result column="source_type" property="sourceType" jdbcType="TINYINT"/>
+    <result column="related_business_id" property="relatedBusinessId" jdbcType="BIGINT"/>
+    <result column="reason" property="reason" jdbcType="VARCHAR"/>
+    <result column="operation_time" property="operationTime" jdbcType="TIMESTAMP"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, operation_type, from_status, to_status, original_assignee_id, new_assignee_id, operator_id, operator_role, source_type, related_business_id, reason, operation_time, create_time
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_order_flow
+    WHERE id = #{id}
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO repair_order_flow(order_id,operation_type,from_status,to_status,original_assignee_id,new_assignee_id,operator_id,operator_role,source_type,related_business_id,reason,operation_time)
+    VALUES(#{orderId},#{operationType},#{fromStatus},#{toStatus},#{originalAssigneeId},#{newAssigneeId},#{operatorId},#{operatorRole},#{sourceType},#{relatedBusinessId},#{reason},#{operationTime})
+  </insert>
+  <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_order_flow WHERE order_id=#{orderId} ORDER BY operation_time ASC,id ASC</select>
+</mapper>

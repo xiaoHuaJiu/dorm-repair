@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairOrderMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairOrder">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+    <result column="student_uid" property="studentUid" jdbcType="BIGINT"/>
+    <result column="contact_name" property="contactName" jdbcType="VARCHAR"/>
+    <result column="contact_phone" property="contactPhone" jdbcType="VARCHAR"/>
+    <result column="campus_id" property="campusId" jdbcType="BIGINT"/>
+    <result column="area_id" property="areaId" jdbcType="BIGINT"/>
+    <result column="building_id" property="buildingId" jdbcType="BIGINT"/>
+    <result column="room_id" property="roomId" jdbcType="BIGINT"/>
+    <result column="location_detail" property="locationDetail" jdbcType="VARCHAR"/>
+    <result column="fault_type_id" property="faultTypeId" jdbcType="BIGINT"/>
+    <result column="problem_description" property="problemDescription" jdbcType="VARCHAR"/>
+    <result column="image_urls" property="imageUrls" jdbcType="VARCHAR"/>
+    <result column="status" property="status" jdbcType="TINYINT"/>
+    <result column="current_assignee_id" property="currentAssigneeId" jdbcType="BIGINT"/>
+    <result column="dispatch_time" property="dispatchTime" jdbcType="TIMESTAMP"/>
+    <result column="accept_deadline" property="acceptDeadline" jdbcType="TIMESTAMP"/>
+    <result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP"/>
+    <result column="expected_complete_time" property="expectedCompleteTime" jdbcType="TIMESTAMP"/>
+    <result column="complete_deadline" property="completeDeadline" jdbcType="TIMESTAMP"/>
+    <result column="repair_submit_time" property="repairSubmitTime" jdbcType="TIMESTAMP"/>
+    <result column="confirm_time" property="confirmTime" jdbcType="TIMESTAMP"/>
+    <result column="complete_time" property="completeTime" jdbcType="TIMESTAMP"/>
+    <result column="rework_count" property="reworkCount" jdbcType="INTEGER"/>
+    <result column="exception_flag" property="exceptionFlag" jdbcType="TINYINT"/>
+    <result column="duplicate_flag" property="duplicateFlag" jdbcType="TINYINT"/>
+    <result column="duplicate_order_id" property="duplicateOrderId" jdbcType="BIGINT"/>
+    <result column="report_time" property="reportTime" jdbcType="TIMESTAMP"/>
+    <result column="cancel_time" property="cancelTime" jdbcType="TIMESTAMP"/>
+    <result column="cancel_reason" property="cancelReason" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_no, student_uid, contact_name, contact_phone, campus_id, area_id, building_id, room_id, location_detail, fault_type_id, problem_description, image_urls, status, current_assignee_id, dispatch_time, accept_deadline, accept_time, expected_complete_time, complete_deadline, repair_submit_time, confirm_time, complete_time, rework_count, exception_flag, duplicate_flag, duplicate_order_id, report_time, cancel_time, cancel_reason, create_time, update_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_order
+    WHERE id = #{id}
+  </select>
+  <select id="selectByIdForUpdate" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/> FROM repair_order WHERE id=#{id} FOR UPDATE
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO repair_order(order_no,student_uid,contact_name,contact_phone,campus_id,area_id,building_id,room_id,
+      location_detail,fault_type_id,problem_description,image_urls,status,rework_count,exception_flag,duplicate_flag,
+      duplicate_order_id,report_time,deleted)
+    VALUES(#{orderNo},#{studentUid},#{contactName},#{contactPhone},#{campusId},#{areaId},#{buildingId},#{roomId},
+      #{locationDetail},#{faultTypeId},#{problemDescription},#{imageUrls},#{status},#{reworkCount},#{exceptionFlag},
+      #{duplicateFlag},#{duplicateOrderId},#{reportTime},#{deleted})
+  </insert>
+
+  <select id="selectPage" parameterType="com.dormrepair.order.model.RepairOrderQueryCondition"
+          resultType="com.dormrepair.order.vo.RepairOrderListItem">
+    SELECT ro.id AS orderId,ro.order_no AS orderNo,ro.status,
+      su.id AS studentUid,su.real_name AS studentName,
+      ft.id AS faultTypeId,ft.type_name AS faultTypeName,
+      ro.campus_id AS campusId,campus.area_name AS campusName,
+      ro.area_id AS areaId,area.area_name AS areaName,
+      ro.building_id AS buildingId,building.area_name AS buildingName,
+      ro.room_id AS roomId,room.area_name AS roomName,
+      CONCAT_WS(' / ',campus.area_name,area.area_name,building.area_name,room.area_name,ro.location_detail) AS locationText,
+      ro.current_assignee_id AS currentAssigneeId,wu.real_name AS workerName,
+      ro.report_time AS reportTime,ro.accept_deadline AS acceptDeadline,
+      ro.complete_deadline AS completeDeadline,ro.complete_time AS completeTime,
+      ro.exception_flag AS exceptionFlag,ro.duplicate_flag AS duplicateFlag
+    FROM repair_order ro
+    LEFT JOIN sys_user su ON su.id=ro.student_uid AND su.deleted=0
+    LEFT JOIN repair_fault_type ft ON ft.id=ro.fault_type_id
+    LEFT JOIN repair_area campus ON campus.id=ro.campus_id AND campus.deleted=0
+    LEFT JOIN repair_area area ON area.id=ro.area_id AND area.deleted=0
+    LEFT JOIN repair_area building ON building.id=ro.building_id AND building.deleted=0
+    LEFT JOIN repair_area room ON room.id=ro.room_id AND room.deleted=0
+    LEFT JOIN repair_worker rw ON rw.id=ro.current_assignee_id AND rw.deleted=0
+    LEFT JOIN sys_user wu ON wu.id=rw.user_id AND wu.deleted=0
+    WHERE ro.deleted=0
+    <if test="studentUid != null">AND ro.student_uid=#{studentUid}</if>
+    <if test="currentAssigneeId != null">AND ro.current_assignee_id=#{currentAssigneeId}</if>
+    <if test="orderNo != null and orderNo != ''">AND ro.order_no LIKE CONCAT('%',#{orderNo},'%')</if>
+    <if test="statusList != null and statusList.size() > 0">AND ro.status IN <foreach collection="statusList" item="s" open="(" separator="," close=")">#{s}</foreach></if>
+    <if test="faultTypeId != null">AND ro.fault_type_id=#{faultTypeId}</if>
+    <if test="campusId != null">AND ro.campus_id=#{campusId}</if>
+    <if test="areaId != null">AND ro.area_id=#{areaId}</if>
+    <if test="buildingId != null">AND ro.building_id=#{buildingId}</if>
+    <if test="roomId != null">AND ro.room_id=#{roomId}</if>
+    <if test="workerId != null">AND ro.current_assignee_id=#{workerId}</if>
+    <if test="reportStartTime != null">AND ro.report_time &gt;=#{reportStartTime}</if>
+    <if test="reportEndTime != null">AND ro.report_time &lt;=#{reportEndTime}</if>
+    <if test="exceptionFlag != null and exceptionFlag">AND ro.exception_flag=1</if>
+    <if test="suspectedDuplicate != null and suspectedDuplicate">AND ro.duplicate_flag=1</if>
+    <if test="acceptTimeout != null and acceptTimeout">AND ro.status=1 AND ro.accept_deadline IS NOT NULL AND ro.accept_deadline &lt; #{now}</if>
+    <if test="completeTimeout != null and completeTimeout">AND ro.status IN (2,4) AND ro.complete_deadline IS NOT NULL AND ro.complete_deadline &lt; #{now}</if>
+    ORDER BY ro.report_time DESC,ro.id DESC
+  </select>
+  <select id="selectSuspectedDuplicateOrders" resultType="com.dormrepair.order.vo.SuspectedRepairOrder">
+    SELECT ro.id orderId,ro.order_no orderNo,ft.type_name faultTypeName,
+      CONCAT_WS(' / ',campus.area_name,area.area_name,building.area_name,room.area_name,ro.location_detail) locationText,
+      ro.report_time reportTime,ro.status
+    FROM repair_order ro
+    JOIN repair_fault_type ft ON ft.id=ro.fault_type_id
+    JOIN repair_area campus ON campus.id=ro.campus_id
+    JOIN repair_area area ON area.id=ro.area_id
+    JOIN repair_area building ON building.id=ro.building_id
+    JOIN repair_area room ON room.id=ro.room_id
+    WHERE ro.deleted=0 AND ro.campus_id=#{campusId} AND ro.area_id=#{areaId}
+      AND ro.building_id=#{buildingId} AND ro.room_id=#{roomId} AND ro.fault_type_id=#{faultTypeId}
+      AND ro.report_time &gt;=#{sinceTime}
+      AND ro.status IN <foreach collection="openStatuses" item="status" open="(" separator="," close=")">#{status}</foreach>
+    ORDER BY ro.report_time DESC,ro.id DESC
+  </select>
+  <update id="casAssign">
+    UPDATE repair_order SET status=1,current_assignee_id=#{workerId},dispatch_time=#{dispatchTime},accept_deadline=#{acceptDeadline},accept_time=NULL
+    WHERE id=#{id} AND deleted=0 AND status=#{expectedStatus}
+    <choose><when test="expectedAssigneeId == null">AND current_assignee_id IS NULL</when><otherwise>AND current_assignee_id=#{expectedAssigneeId}</otherwise></choose>
+  </update>
+  <update id="casMarkPending">
+    UPDATE repair_order SET status=0,current_assignee_id=NULL,dispatch_time=NULL,accept_deadline=NULL,accept_time=NULL
+    WHERE id=#{id} AND deleted=0 AND status=#{expectedStatus}
+    <choose><when test="expectedAssigneeId == null">AND current_assignee_id IS NULL</when><otherwise>AND current_assignee_id=#{expectedAssigneeId}</otherwise></choose>
+  </update>
+  <select id="selectPendingDispatchIds" resultType="long">
+    SELECT id FROM repair_order WHERE deleted=0 AND status=0 AND current_assignee_id IS NULL AND update_time&lt;=#{before} ORDER BY update_time,id LIMIT #{limit}
+  </select>
+  <update id="casAccept">UPDATE repair_order SET status=2,accept_time=#{acceptTime},expected_complete_time=#{expectedCompleteTime},complete_deadline=#{completeDeadline} WHERE id=#{id} AND deleted=0 AND status=1 AND current_assignee_id=#{workerId}</update>
+  <update id="casInterrupt">UPDATE repair_order SET status=5 WHERE id=#{id} AND deleted=0 AND status=2 AND current_assignee_id=#{workerId}</update>
+  <update id="casResume">UPDATE repair_order SET status=2 WHERE id=#{id} AND deleted=0 AND status=5 AND current_assignee_id=#{workerId}</update>
+  <update id="casSubmitResult">UPDATE repair_order SET status=3,repair_submit_time=#{repairSubmitTime} WHERE id=#{id} AND deleted=0 AND status IN (2,4) AND current_assignee_id=#{workerId}</update>
+</mapper>

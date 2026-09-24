@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairLeaveRequestMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairLeaveRequest">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="worker_id" property="workerId" jdbcType="BIGINT"/>
+    <result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP"/>
+    <result column="reason" property="reason" jdbcType="VARCHAR"/>
+    <result column="status" property="status" jdbcType="TINYINT"/>
+    <result column="review_admin_id" property="reviewAdminId" jdbcType="BIGINT"/>
+    <result column="review_remark" property="reviewRemark" jdbcType="VARCHAR"/>
+    <result column="review_time" property="reviewTime" jdbcType="TIMESTAMP"/>
+    <result column="reassign_status" property="reassignStatus" jdbcType="TINYINT"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, worker_id, start_time, end_time, reason, status, review_admin_id, review_remark, review_time, reassign_status, create_time, update_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_leave_request
+    WHERE id = #{id}
+  </select>
+</mapper>

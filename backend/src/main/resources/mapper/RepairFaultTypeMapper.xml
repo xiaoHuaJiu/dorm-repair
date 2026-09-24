@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairFaultTypeMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairFaultType">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="type_code" property="typeCode" jdbcType="VARCHAR"/>
+    <result column="type_name" property="typeName" jdbcType="VARCHAR"/>
+    <result column="status" property="status" jdbcType="TINYINT"/>
+    <result column="sort_no" property="sortNo" jdbcType="INTEGER"/>
+    <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, type_code, type_name, status, sort_no, remark, create_time, update_time
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_fault_type
+    WHERE id = #{id}
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO repair_fault_type(type_code,type_name,status,sort_no,remark)
+    VALUES(#{typeCode},#{typeName},#{status},#{sortNo},#{remark})
+  </insert>
+  <update id="update">UPDATE repair_fault_type SET type_name=#{typeName},sort_no=#{sortNo},remark=#{remark} WHERE id=#{id}</update>
+  <update id="updateStatus">UPDATE repair_fault_type SET status=#{status} WHERE id=#{id}</update>
+  <select id="selectPage" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/> FROM repair_fault_type
+    <where>
+      <if test="typeCode != null and typeCode != ''">AND type_code LIKE CONCAT('%',#{typeCode},'%')</if>
+      <if test="typeName != null and typeName != ''">AND type_name LIKE CONCAT('%',#{typeName},'%')</if>
+      <if test="status != null">AND status=#{status}</if>
+    </where>
+    ORDER BY sort_no,id
+  </select>
+  <select id="selectEnabled" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/> FROM repair_fault_type WHERE status=1 ORDER BY sort_no,id
+  </select>
+</mapper>

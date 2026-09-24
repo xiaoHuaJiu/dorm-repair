@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairMaterialUsageMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairMaterialUsage">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+    <result column="worker_id" property="workerId" jdbcType="BIGINT"/>
+    <result column="material_name" property="materialName" jdbcType="VARCHAR"/>
+    <result column="specification" property="specification" jdbcType="VARCHAR"/>
+    <result column="quantity" property="quantity" jdbcType="DECIMAL"/>
+    <result column="unit" property="unit" jdbcType="VARCHAR"/>
+    <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    <result column="use_time" property="useTime" jdbcType="TIMESTAMP"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, worker_id, material_name, specification, quantity, unit, remark, use_time, create_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_material_usage
+    WHERE id = #{id}
+  </select>
+  <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_material_usage WHERE order_id=#{orderId} AND deleted=0 ORDER BY use_time ASC,id ASC</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO repair_material_usage(order_id,worker_id,material_name,specification,quantity,unit,remark,use_time,deleted)
+    VALUES(#{orderId},#{workerId},#{materialName},#{specification},#{quantity},#{unit},#{remark},#{useTime},0)
+  </insert>
+</mapper>

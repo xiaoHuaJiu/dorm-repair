@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairReworkRecordMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairReworkRecord">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+    <result column="rework_no" property="reworkNo" jdbcType="INTEGER"/>
+    <result column="applicant_uid" property="applicantUid" jdbcType="BIGINT"/>
+    <result column="reason" property="reason" jdbcType="VARCHAR"/>
+    <result column="image_urls" property="imageUrls" jdbcType="VARCHAR"/>
+    <result column="original_assignee_id" property="originalAssigneeId" jdbcType="BIGINT"/>
+    <result column="status" property="status" jdbcType="TINYINT"/>
+    <result column="admin_intervention" property="adminIntervention" jdbcType="TINYINT"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="finish_time" property="finishTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, rework_no, applicant_uid, reason, image_urls, original_assignee_id, status, admin_intervention, create_time, finish_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_rework_record
+    WHERE id = #{id}
+  </select>
+  <select id="selectByOrderId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_rework_record WHERE order_id=#{orderId} AND deleted=0 ORDER BY rework_no ASC,id ASC</select>
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dormrepair.domain.mapper.RepairWorkerMapper">
+  <resultMap id="BaseResultMap" type="com.dormrepair.domain.entity.RepairWorker">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="user_id" property="userId" jdbcType="BIGINT"/>
+    <result column="worker_no" property="workerNo" jdbcType="VARCHAR"/>
+    <result column="work_status" property="workStatus" jdbcType="TINYINT"/>
+    <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, user_id, worker_no, work_status, remark, create_time, update_time, deleted
+  </sql>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_worker
+    WHERE id = #{id}
+  </select>
+  <select id="selectByUserId" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_worker WHERE user_id=#{userId} AND deleted=0</select>
+  <select id="selectByWorkerNo" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_worker WHERE worker_no=#{workerNo} AND deleted=0</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">INSERT INTO repair_worker(user_id,worker_no,work_status,remark,deleted) VALUES(#{userId},#{workerNo},#{workStatus},#{remark},#{deleted})</insert>
+  <update id="updateStatus">UPDATE repair_worker SET work_status=#{workStatus} WHERE id=#{id} AND deleted=0</update>
+  <update id="update">UPDATE repair_worker SET worker_no=#{workerNo},remark=#{remark} WHERE id=#{id} AND deleted=0</update>
+  <select id="selectDetail" resultType="com.dormrepair.worker.vo.WorkerDetailResponse">
+    SELECT w.id workerId,w.user_id userId,u.username,u.real_name realName,u.phone,w.worker_no workerNo,u.status userStatus,w.work_status workStatus,w.remark
+    FROM repair_worker w JOIN sys_user u ON u.id=w.user_id WHERE w.id=#{id} AND w.deleted=0 AND u.deleted=0
+  </select>
+  <select id="selectPage" resultType="com.dormrepair.worker.vo.WorkerDetailResponse">
+    SELECT DISTINCT w.id workerId,w.user_id userId,u.username,u.real_name realName,u.phone,w.worker_no workerNo,u.status userStatus,w.work_status workStatus,w.remark
+    FROM repair_worker w JOIN sys_user u ON u.id=w.user_id
+    <if test="faultTypeId != null">JOIN repair_worker_fault_type wf ON wf.worker_id=w.id AND wf.status=1</if>
+    WHERE w.deleted=0 AND u.deleted=0
+    <if test="workerNo != null and workerNo != ''">AND w.worker_no LIKE CONCAT('%',#{workerNo},'%')</if>
+    <if test="realName != null and realName != ''">AND u.real_name LIKE CONCAT('%',#{realName},'%')</if>
+    <if test="phone != null and phone != ''">AND u.phone LIKE CONCAT('%',#{phone},'%')</if>
+    <if test="workStatus != null">AND w.work_status=#{workStatus}</if>
+    <if test="faultTypeId != null">AND wf.fault_type_id=#{faultTypeId}</if>
+    ORDER BY w.id DESC
+  </select>
+  <sql id="ExcludeWorkers"><if test="excluded != null and excluded.size() > 0">AND w.id NOT IN <foreach collection="excluded" item="id" open="(" separator="," close=")">#{id}</foreach></if></sql>
+  <select id="countSkillWorkers" resultType="int">
+    SELECT COUNT(DISTINCT w.id) FROM repair_worker w
+    JOIN repair_worker_fault_type wf ON wf.worker_id=w.id AND wf.status=1 AND wf.fault_type_id=#{faultTypeId}
+    WHERE w.deleted=0 <include refid="ExcludeWorkers"/>
+  </select>
+  <select id="countAreaWorkers" resultType="int">
+    SELECT COUNT(DISTINCT w.id) FROM repair_worker w
+    JOIN repair_worker_fault_type wf ON wf.worker_id=w.id AND wf.status=1 AND wf.fault_type_id=#{faultTypeId}
+    JOIN repair_worker_area_scope s ON s.worker_id=w.id AND s.status=1 AND s.campus_id=#{campusId}
+      AND (s.area_id IS NULL OR s.area_id=#{areaId}) AND (s.building_id IS NULL OR s.building_id=#{buildingId})
+    WHERE w.deleted=0 <include refid="ExcludeWorkers"/>
+  </select>
+  <select id="selectDispatchCandidates" resultType="com.dormrepair.dispatch.model.DispatchCandidate">
+    SELECT w.id workerId,COALESCE(loads.workload,0) workload FROM repair_worker w
+    JOIN sys_user u ON u.id=w.user_id AND u.deleted=0 AND u.status=1
+    JOIN repair_worker_fault_type wf ON wf.worker_id=w.id AND wf.status=1 AND wf.fault_type_id=#{faultTypeId}
+    JOIN repair_worker_area_scope s ON s.worker_id=w.id AND s.status=1 AND s.campus_id=#{campusId}
+      AND (s.area_id IS NULL OR s.area_id=#{areaId}) AND (s.building_id IS NULL OR s.building_id=#{buildingId})
+    LEFT JOIN (SELECT current_assignee_id,COUNT(*) workload FROM repair_order WHERE deleted=0 AND status IN (1,2,3,4,5) GROUP BY current_assignee_id) loads ON loads.current_assignee_id=w.id
+    WHERE w.deleted=0 AND w.work_status=0
+      AND NOT EXISTS(SELECT 1 FROM repair_leave_request l WHERE l.worker_id=w.id AND l.deleted=0 AND l.status=1 AND l.start_time&lt;=#{now} AND l.end_time&gt;=#{now})
+      <include refid="ExcludeWorkers"/>
+    GROUP BY w.id,loads.workload ORDER BY workload ASC,w.id ASC
+  </select>
+</mapper>

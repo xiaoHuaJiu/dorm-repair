@@ -1,0 +1,70 @@
+:root {
+  color-scheme: light;
+
+  /* 宿修通：以报修红为识别色，灰白层级承载高密度工单信息。 */
+  --dr-color-primary: #ec383e;
+  --dr-color-primary-hover: #d92d33;
+  --dr-color-primary-active: #bd2027;
+  --dr-color-primary-soft: #fff0f1;
+  --dr-color-primary-faint: #fff7f7;
+  --dr-color-text: #15171a;
+  --dr-color-text-secondary: #606875;
+  --dr-color-text-muted: #8a919d;
+  --dr-color-border: #e1e4e8;
+  --dr-color-border-strong: #cfd4da;
+  --dr-color-surface: #ffffff;
+  --dr-color-background: #f5f6f8;
+  --dr-color-success: #159b62;
+  --dr-color-warning: #d97706;
+  --dr-color-danger: #d92d33;
+  --dr-color-info: #2979c9;
+
+  --dr-font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --dr-font-size-xs: 12px;
+  --dr-font-size-sm: 14px;
+  --dr-font-size-md: 16px;
+  --dr-font-size-lg: 20px;
+  --dr-font-size-xl: 28px;
+  --dr-font-size-display: 36px;
+  --dr-line-height-tight: 1.25;
+  --dr-line-height-base: 1.6;
+
+  --dr-space-1: 4px;
+  --dr-space-2: 8px;
+  --dr-space-3: 12px;
+  --dr-space-4: 16px;
+  --dr-space-5: 20px;
+  --dr-space-6: 24px;
+  --dr-space-8: 32px;
+  --dr-space-10: 40px;
+  --dr-space-12: 48px;
+
+  --dr-radius-sm: 8px;
+  --dr-radius-md: 12px;
+  --dr-radius-lg: 18px;
+  --dr-radius-pill: 999px;
+  --dr-shadow-card: 0 8px 28px rgb(31 35 41 / 7%);
+  --dr-shadow-dialog: 0 24px 64px rgb(31 35 41 / 18%);
+  --dr-mobile-content-width: 960px;
+  --dr-admin-sidebar-width: 240px;
+  --dr-admin-content-width: 1440px;
+  --dr-header-height: 72px;
+  --dr-bottom-nav-height: 64px;
+
+  --el-color-primary: var(--dr-color-primary);
+  --el-color-primary-light-3: #f36f73;
+  --el-color-primary-light-5: #f7979a;
+  --el-color-primary-light-7: #fbc1c3;
+  --el-color-primary-light-8: #fdd7d8;
+  --el-color-primary-light-9: var(--dr-color-primary-soft);
+  --el-color-primary-dark-2: var(--dr-color-primary-active);
+  --el-border-radius-base: var(--dr-radius-sm);
+  --van-primary-color: var(--dr-color-primary);
+  --van-danger-color: var(--dr-color-danger);
+  --van-success-color: var(--dr-color-success);
+  --van-warning-color: var(--dr-color-warning);
+  --van-background: var(--dr-color-background);
+  --van-text-color: var(--dr-color-text);
+  --van-border-color: var(--dr-color-border);
+  --van-radius-lg: var(--dr-radius-md);
+}
