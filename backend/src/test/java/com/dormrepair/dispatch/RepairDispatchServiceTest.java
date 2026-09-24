@@ -23,5 +23,26 @@ class RepairDispatchServiceTest {
   DispatchResult result=new RepairDispatchService(orders,workers,time,tx,alerts).dispatch(10L,Set.of(),DispatchSourceType.INITIAL_REPORT);
   assertThat(result.failureReason()).isEqualTo(DispatchFailureReason.NO_SKILL_WORKER); verify(alerts).record(10L,DispatchSourceType.INITIAL_REPORT,DispatchFailureReason.NO_SKILL_WORKER,"没有匹配故障类型的维修人员");
  }
+ @Test void leaveReassignTreatsOrderMovedAwayAsHandled(){
+  RepairOrderMapper orders=mock(RepairOrderMapper.class); RepairWorkerMapper workers=mock(RepairWorkerMapper.class);
+  WorkingTimeCalculator time=mock(WorkingTimeCalculator.class); RepairDispatchTransactionService tx=mock(RepairDispatchTransactionService.class); DispatchAlertService alerts=mock(DispatchAlertService.class);
+  RepairOrder o=order(); o.setStatus(2); o.setCurrentAssigneeId(8L);
+  when(orders.selectById(10L)).thenReturn(o);
+  DispatchResult result=new RepairDispatchService(orders,workers,time,tx,alerts).dispatch(10L,Set.of(5L),DispatchSourceType.LEAVE_REASSIGN);
+  assertThat(result.success()).isTrue(); assertThat(result.workerId()).isEqualTo(8L); verifyNoInteractions(tx);
+ }
+ @Test void leaveReassignCasMissSucceedsWhenOrderAlreadyMoved(){
+  RepairOrderMapper orders=mock(RepairOrderMapper.class); RepairWorkerMapper workers=mock(RepairWorkerMapper.class);
+  WorkingTimeCalculator time=mock(WorkingTimeCalculator.class); RepairDispatchTransactionService tx=mock(RepairDispatchTransactionService.class); DispatchAlertService alerts=mock(DispatchAlertService.class);
+  RepairOrder original=order(); original.setStatus(2); original.setCurrentAssigneeId(5L);
+  RepairOrder moved=order(); moved.setStatus(2); moved.setCurrentAssigneeId(8L);
+  when(orders.selectById(10L)).thenReturn(original,moved);
+  when(workers.countSkillWorkers(9L,List.of(5L))).thenReturn(1); when(workers.countAreaWorkers(9L,1L,2L,3L,List.of(5L))).thenReturn(1);
+  when(workers.selectDispatchCandidates(eq(9L),eq(1L),eq(2L),eq(3L),any(),eq(List.of(5L)))).thenReturn(List.of(new DispatchCandidate(8L,0)));
+  when(time.calculateDeadline(any(),eq(Duration.ofMinutes(30)))).thenReturn(LocalDateTime.of(2026,9,24,10,30));
+  when(tx.assign(any(),eq(8L),any(),any(),eq(DispatchSourceType.LEAVE_REASSIGN))).thenReturn(false);
+  DispatchResult result=new RepairDispatchService(orders,workers,time,tx,alerts).dispatch(10L,Set.of(5L),DispatchSourceType.LEAVE_REASSIGN);
+  assertThat(result.success()).isTrue(); assertThat(result.workerId()).isEqualTo(8L);
+ }
  private RepairOrder order(){RepairOrder o=new RepairOrder();o.setId(10L);o.setStatus(0);o.setFaultTypeId(9L);o.setCampusId(1L);o.setAreaId(2L);o.setBuildingId(3L);return o;}
 }

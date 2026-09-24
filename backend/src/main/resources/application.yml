@@ -71,3 +71,11 @@ app:
     recovery-initial-delay-ms: ${DISPATCH_RECOVERY_INITIAL_DELAY_MS:60000}
     recovery-batch-size: ${DISPATCH_RECOVERY_BATCH_SIZE:100}
     stale-minutes: ${DISPATCH_STALE_MINUTES:1}
+  leave:
+    effective-delay-ms: ${LEAVE_EFFECTIVE_DELAY_MS:60000}
+    effective-initial-delay-ms: ${LEAVE_EFFECTIVE_INITIAL_DELAY_MS:30000}
+    end-delay-ms: ${LEAVE_END_DELAY_MS:60000}
+    end-initial-delay-ms: ${LEAVE_END_INITIAL_DELAY_MS:60000}
+    effective-batch-size: ${LEAVE_EFFECTIVE_BATCH_SIZE:100}
+    end-batch-size: ${LEAVE_END_BATCH_SIZE:100}
+    stale-minutes: ${LEAVE_STALE_MINUTES:5}

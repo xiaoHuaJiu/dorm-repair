@@ -129,6 +129,11 @@
   <select id="selectPendingDispatchIds" resultType="long">
     SELECT id FROM repair_order WHERE deleted=0 AND status=0 AND current_assignee_id IS NULL AND update_time&lt;=#{before} ORDER BY update_time,id LIMIT #{limit}
   </select>
+  <select id="selectOpenOrderIdsByAssignee" resultType="long">
+    SELECT id FROM repair_order WHERE deleted=0 AND current_assignee_id=#{assigneeId}
+    AND status IN <foreach collection="statuses" item="s" open="(" separator="," close=")">#{s}</foreach>
+    ORDER BY id
+  </select>
   <update id="casAccept">UPDATE repair_order SET status=2,accept_time=#{acceptTime},expected_complete_time=#{expectedCompleteTime},complete_deadline=#{completeDeadline} WHERE id=#{id} AND deleted=0 AND status=1 AND current_assignee_id=#{workerId}</update>
   <update id="casInterrupt">UPDATE repair_order SET status=5 WHERE id=#{id} AND deleted=0 AND status=2 AND current_assignee_id=#{workerId}</update>
   <update id="casResume">UPDATE repair_order SET status=2 WHERE id=#{id} AND deleted=0 AND status=5 AND current_assignee_id=#{workerId}</update>

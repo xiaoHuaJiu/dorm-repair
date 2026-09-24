@@ -16,4 +16,8 @@
   VALUES(#{orderId},#{sourceType},#{failureReason},0,#{failureDetail},1,#{firstOccurredTime},#{lastOccurredTime})
   ON DUPLICATE KEY UPDATE failure_detail=VALUES(failure_detail),occurrence_count=occurrence_count+1,last_occurred_time=VALUES(last_occurred_time)
  </insert>
+ <insert id="insertSummaryAlert" useGeneratedKeys="true" keyProperty="id">
+  INSERT INTO repair_dispatch_alert(order_id,source_type,failure_reason,alert_status,failure_detail,occurrence_count,first_occurred_time,last_occurred_time)
+  VALUES(#{orderId},#{sourceType},#{failureReason},0,#{failureDetail},1,#{firstOccurredTime},#{lastOccurredTime})
+ </insert>
 </mapper>

@@ -15,6 +15,7 @@ public interface RepairWorkerMapper {
     RepairWorker selectByWorkerNo(@Param("workerNo") String workerNo);
     int insert(RepairWorker value);
     int updateStatus(@Param("id") Long id,@Param("workStatus") Integer workStatus);
+    int casUpdateStatus(@Param("id") Long id,@Param("expectedStatus") Integer expectedStatus,@Param("workStatus") Integer workStatus);
     int update(RepairWorker value);
     WorkerDetailResponse selectDetail(@Param("id") Long id);
     List<WorkerDetailResponse> selectPage(@Param("workerNo") String workerNo,@Param("realName") String realName,

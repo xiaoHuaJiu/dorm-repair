@@ -21,9 +21,122 @@
     id, worker_id, start_time, end_time, reason, status, review_admin_id, review_remark, review_time, reassign_status, create_time, update_time, deleted
   </sql>
 
+  <sql id="Item_Column_List">
+    l.id leaveId, l.worker_id workerId, u.real_name workerName, w.worker_no workerNo,
+    l.start_time startTime, l.end_time endTime, l.reason reason,
+    l.status approvalStatus, l.reassign_status reassignStatus,
+    l.review_admin_id reviewAdminId, ra.real_name reviewAdminName, l.review_remark reviewRemark,
+    l.review_time reviewTime, l.create_time createTime
+  </sql>
+
   <select id="selectById" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM repair_leave_request
     WHERE id = #{id}
+  </select>
+
+  <select id="selectByIdForUpdate" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM repair_leave_request
+    WHERE id = #{id}
+    FOR UPDATE
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO repair_leave_request(worker_id, start_time, end_time, reason, status, reassign_status, create_time, update_time, deleted)
+    VALUES(#{workerId}, #{startTime}, #{endTime}, #{reason}, #{status}, #{reassignStatus}, #{createTime}, #{updateTime}, #{deleted})
+  </insert>
+
+  <!-- 时间区间语义为 [startTime, endTime)：existing.start_time < newEndTime AND existing.end_time > newStartTime -->
+  <select id="countOverlap" resultType="int">
+    SELECT COUNT(*) FROM repair_leave_request
+    WHERE deleted = 0 AND worker_id = #{workerId}
+      AND status IN <foreach collection="statuses" item="s" open="(" separator="," close=")">#{s}</foreach>
+      AND start_time &lt; #{endTime}
+      AND end_time &gt; #{startTime}
+  </select>
+
+  <select id="selectWorkerPage" resultType="com.dormrepair.leave.vo.LeaveRequestListItem">
+    SELECT <include refid="Item_Column_List"/>
+    FROM repair_leave_request l
+    JOIN repair_worker w ON w.id = l.worker_id
+    JOIN sys_user u ON u.id = w.user_id
+    LEFT JOIN sys_user ra ON ra.id = l.review_admin_id
+    WHERE l.deleted = 0 AND l.worker_id = #{workerId}
+    <if test="approvalStatus != null">AND l.status = #{approvalStatus}</if>
+    ORDER BY l.id DESC
+  </select>
+
+  <select id="selectAdminPage" resultType="com.dormrepair.leave.vo.LeaveRequestListItem">
+    SELECT <include refid="Item_Column_List"/>
+    FROM repair_leave_request l
+    JOIN repair_worker w ON w.id = l.worker_id
+    JOIN sys_user u ON u.id = w.user_id
+    LEFT JOIN sys_user ra ON ra.id = l.review_admin_id
+    WHERE l.deleted = 0
+    <if test="workerId != null">AND l.worker_id = #{workerId}</if>
+    <if test="approvalStatus != null">AND l.status = #{approvalStatus}</if>
+    <if test="startTime != null">AND l.start_time &gt;= #{startTime}</if>
+    <if test="endTime != null">AND l.start_time &lt;= #{endTime}</if>
+    ORDER BY l.id DESC
+  </select>
+
+  <select id="selectDetailByWorker" resultType="com.dormrepair.leave.vo.LeaveRequestDetailResponse">
+    SELECT <include refid="Item_Column_List"/>, l.update_time updateTime
+    FROM repair_leave_request l
+    JOIN repair_worker w ON w.id = l.worker_id
+    JOIN sys_user u ON u.id = w.user_id
+    LEFT JOIN sys_user ra ON ra.id = l.review_admin_id
+    WHERE l.deleted = 0 AND l.id = #{id} AND l.worker_id = #{workerId}
+  </select>
+
+  <select id="selectDetailById" resultType="com.dormrepair.leave.vo.LeaveRequestDetailResponse">
+    SELECT <include refid="Item_Column_List"/>, l.update_time updateTime
+    FROM repair_leave_request l
+    JOIN repair_worker w ON w.id = l.worker_id
+    JOIN sys_user u ON u.id = w.user_id
+    LEFT JOIN sys_user ra ON ra.id = l.review_admin_id
+    WHERE l.deleted = 0 AND l.id = #{id}
+  </select>
+
+  <update id="casReview">
+    UPDATE repair_leave_request
+    SET status = #{approvalStatus}, review_admin_id = #{reviewAdminId}, review_remark = #{reviewRemark}, review_time = #{reviewTime}
+    WHERE id = #{id} AND deleted = 0 AND status = #{expectedStatus}
+  </update>
+
+  <select id="selectEffectiveIds" resultType="long">
+    SELECT id FROM repair_leave_request
+    WHERE deleted = 0 AND status = 1 AND start_time &lt;= #{now} AND end_time &gt; #{now}
+      AND (reassign_status = 0 OR (reassign_status = 1 AND update_time &lt; #{staleBefore}))
+    ORDER BY id
+    LIMIT #{limit}
+  </select>
+
+  <update id="casTakeForEffective">
+    UPDATE repair_leave_request
+    SET reassign_status = 1, update_time = NOW()
+    WHERE id = #{id} AND deleted = 0 AND status = 1
+      AND (reassign_status = 0 OR (reassign_status = 1 AND update_time &lt; #{staleBefore}))
+  </update>
+
+  <update id="casUpdateReassignStatus">
+    UPDATE repair_leave_request
+    SET reassign_status = #{reassignStatus}, update_time = NOW()
+    WHERE id = #{id} AND reassign_status = #{expectedStatus}
+  </update>
+
+  <select id="selectWorkerIdsWithEndedLeave" resultType="long">
+    SELECT DISTINCT l.worker_id FROM repair_leave_request l
+    JOIN repair_worker w ON w.id = l.worker_id AND w.deleted = 0 AND w.work_status = 1
+    WHERE l.deleted = 0 AND l.status = 1 AND l.end_time &lt;= #{now}
+    ORDER BY l.worker_id
+    LIMIT #{limit}
+  </select>
+
+  <select id="countActiveLeave" resultType="int">
+    SELECT COUNT(*) FROM repair_leave_request
+    WHERE deleted = 0 AND status = 1 AND worker_id = #{workerId}
+      AND start_time &lt;= #{now} AND end_time &gt; #{now}
   </select>
 </mapper>

@@ -25,6 +25,7 @@
   <select id="selectByWorkerNo" resultMap="BaseResultMap">SELECT <include refid="Base_Column_List"/> FROM repair_worker WHERE worker_no=#{workerNo} AND deleted=0</select>
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">INSERT INTO repair_worker(user_id,worker_no,work_status,remark,deleted) VALUES(#{userId},#{workerNo},#{workStatus},#{remark},#{deleted})</insert>
   <update id="updateStatus">UPDATE repair_worker SET work_status=#{workStatus} WHERE id=#{id} AND deleted=0</update>
+  <update id="casUpdateStatus">UPDATE repair_worker SET work_status=#{workStatus} WHERE id=#{id} AND deleted=0 AND work_status=#{expectedStatus}</update>
   <update id="update">UPDATE repair_worker SET worker_no=#{workerNo},remark=#{remark} WHERE id=#{id} AND deleted=0</update>
   <select id="selectDetail" resultType="com.dormrepair.worker.vo.WorkerDetailResponse">
     SELECT w.id workerId,w.user_id userId,u.username,u.real_name realName,u.phone,w.worker_no workerNo,u.status userStatus,w.work_status workStatus,w.remark

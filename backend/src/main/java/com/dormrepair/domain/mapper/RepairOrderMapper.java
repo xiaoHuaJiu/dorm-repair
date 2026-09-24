@@ -22,6 +22,7 @@ public interface RepairOrderMapper {
         @Param("workerId") Long workerId,@Param("dispatchTime") LocalDateTime dispatchTime,@Param("acceptDeadline") LocalDateTime acceptDeadline);
     int casMarkPending(@Param("id") Long id,@Param("expectedStatus") Integer expectedStatus,@Param("expectedAssigneeId") Long expectedAssigneeId);
     List<Long> selectPendingDispatchIds(@Param("before") LocalDateTime before,@Param("limit") int limit);
+    List<Long> selectOpenOrderIdsByAssignee(@Param("assigneeId") Long assigneeId,@Param("statuses") List<Integer> statuses);
     int casAccept(@Param("id") Long id,@Param("workerId") Long workerId,@Param("acceptTime") LocalDateTime acceptTime,
         @Param("expectedCompleteTime") LocalDateTime expectedCompleteTime,@Param("completeDeadline") LocalDateTime completeDeadline);
     int casInterrupt(@Param("id") Long id,@Param("workerId") Long workerId);
