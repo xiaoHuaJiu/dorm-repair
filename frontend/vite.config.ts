@@ -21,5 +21,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // 全量并行运行时的路由跳转类测试可能超过默认 5s，提高阈值避免环境负载导致的偶发超时。
+    testTimeout: 15000,
   },
 })
