@@ -40,6 +40,12 @@ public enum ResultCodeEnum {
     FILE_NOT_FOUND(18005,"文件不存在"), FILE_NOT_OWNER(18006,"无权操作该文件"),
     FILE_ALREADY_BOUND(18007,"文件已经绑定业务"), FILE_UPLOAD_FAILED(18008,"文件上传失败"),
     FILE_DELETE_FAILED(18009,"文件删除失败"),
+    TRANSFER_STATE_INVALID(19001,"当前工单状态不允许申请转派"),
+    TRANSFER_PENDING_EXISTS(19002,"该工单已有待审批转派申请"),
+    TRANSFER_ALREADY_REVIEWED(19003,"该转派申请已经处理"),
+    TRANSFER_ORDER_CHANGED(19004,"工单负责人或状态已变化，该转派申请已失效"),
+    TRANSFER_NOT_FOUND(19005,"转派申请不存在"),
+    TRANSFER_BIZ_NO_CONFLICT(19006,"当前提交标识已被用于其他转派操作"),
     SYSTEM_ERROR(50000, "系统异常，请稍后重试");
 
     private final int code;
